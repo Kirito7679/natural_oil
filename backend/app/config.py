@@ -1,5 +1,4 @@
 """Application settings loaded from environment / .env file."""
-
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -17,7 +16,14 @@ class Settings(BaseSettings):
     ADMIN_PHONE: str = "+998901234567"
     ADMIN_PASSWORD: str = "admin123"
 
-    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
+    # CORS — production'da o'zgartiriladi
+    FRONTEND_URL: str = "http://localhost:5174"
+
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+    )
 
 
 settings = Settings()

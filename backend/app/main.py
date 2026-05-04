@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.database import create_tables, SessionLocal
+from app.config import settings
 from app.routers import (
     auth,
     balance,
@@ -47,6 +48,7 @@ app.add_middleware(
         "http://localhost:5174",
         "http://127.0.0.1:5173",
         "http://127.0.0.1:5174",
+        settings.FRONTEND_URL,
     ],
     allow_credentials=True,
     allow_methods=["*"],
