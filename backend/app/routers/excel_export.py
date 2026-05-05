@@ -29,7 +29,16 @@ HEADER_FONT = Font(bold=True, color="FFFFFF", size=11)
 HEADER_FILL = PatternFill("solid", fgColor="1F3A5F")
 SUMMARY_FONT = Font(bold=True, size=11)
 SECTION_FONT = Font(bold=True, size=13)
-MONEY_FORMAT = '#,##0'
+
+def format_money(value: float | int | None) -> str:
+    if value is None:
+        return "0 so'm"
+    try:
+        val = int(round(value))
+        # This will format with spaces, e.g. "10 000 000 so'm"
+        return f"{val:,}".replace(",", " ") + " so'm"
+    except Exception:
+        return "0 so'm"
 
 PAYMENT_LABELS = {"cash": "Naqd", "bank_transfer": "Perechisleniya"}
 DIRECTION_LABELS = {"income": "Kirim", "outgoing": "Chiqim"}
@@ -79,11 +88,7 @@ def auto_width(ws):
         ws.column_dimensions[col_letter].width = min(max(max_len + 4, 12), 45)
 
 
-def format_money_columns(ws, cols, start_row=2):
-    """Apply money format to given column indexes (1-based) for all data rows."""
-    for row in ws.iter_rows(min_row=start_row, max_row=ws.max_row):
-        for col_idx in cols:
-            row[col_idx - 1].number_format = MONEY_FORMAT
+# Removed format_money_columns since we format as strings
 
 
 def make_response(wb: Workbook, filename: str) -> StreamingResponse:
@@ -188,10 +193,10 @@ def export_general_report(
         ("Bizning qarzlar", supp_debt),
         ("Naqd kirim", cash_in),
         ("Naqd chiqim", cash_out),
-        ("Naqd saldo", cash_in - cash_out),
+        ("Naqd balans (Hisoblangan)", cash_in - cash_out),
         ("Perechisleniya kirim", bank_in),
         ("Perechisleniya chiqim", bank_out),
-        ("Perechisleniya saldo", bank_in - bank_out),
+        ("Perechisleniya balans (Hisoblangan)", bank_in - bank_out),
         ("Naqd balans", cash_bal),
         ("Perechisleniya balans", bank_bal),
         ("Umumiy balans", cash_bal + bank_bal),
@@ -200,9 +205,8 @@ def export_general_report(
     style_header_row(ws, ws.max_row)
     summary_start = ws.max_row
     for label, value in summary_rows:
-        ws.append([label, value])
+        ws.append([label, format_money(value)])
         ws[ws.max_row][0].font = SUMMARY_FONT
-        ws[ws.max_row][1].number_format = MONEY_FORMAT
 
     ws.freeze_panes = f"A{summary_start + 1}"
     ws.append([])
@@ -220,24 +224,20 @@ def export_general_report(
             s.customer.name if s.customer else "",
             s.product.name if s.product else "",
             s.quantity_liters,
-            s.sale_price_per_liter,
-            s.total_sale_amount,
-            s.total_profit,
+            format_money(s.sale_price_per_liter),
+            format_money(s.total_sale_amount),
+            format_money(s.total_profit),
         ])
-        for col in [5, 6, 7]:
-            ws[ws.max_row][col - 1].number_format = MONEY_FORMAT
     if sales:
         ws.append([
             "JAMI", "", "",
             sum(s.quantity_liters for s in sales),
             "",
-            total_sale,
-            total_profit,
+            format_money(total_sale),
+            format_money(total_profit),
         ])
         for cell in ws[ws.max_row]:
             cell.font = SUMMARY_FONT
-        for col in [5, 6, 7]:
-            ws[ws.max_row][col - 1].number_format = MONEY_FORMAT
 
     ws.append([])
     ws.append([])
@@ -253,13 +253,11 @@ def export_general_report(
     ws.append(["Kategoriya", "Summa"])
     style_header_row(ws, ws.max_row)
     for cat, amt in sorted(expense_by_cat.items(), key=lambda x: -x[1]):
-        ws.append([cat, amt])
-        ws[ws.max_row][1].number_format = MONEY_FORMAT
+        ws.append([cat, format_money(amt)])
     if expense_by_cat:
-        ws.append(["JAMI", total_expense])
+        ws.append(["JAMI", format_money(total_expense)])
         for cell in ws[ws.max_row]:
             cell.font = SUMMARY_FONT
-        ws[ws.max_row][1].number_format = MONEY_FORMAT
 
     ws.append([])
     ws.append([])
@@ -272,13 +270,11 @@ def export_general_report(
     flow_rows = [
         ("Kirim", cash_in, bank_in),
         ("Chiqim", cash_out, bank_out),
-        ("Saldo", cash_in - cash_out, bank_in - bank_out),
+        ("Balans", cash_in - cash_out, bank_in - bank_out),
     ]
     for label, c, b in flow_rows:
-        ws.append([label, c, b])
+        ws.append([label, format_money(c), format_money(b)])
         ws[ws.max_row][0].font = SUMMARY_FONT
-        ws[ws.max_row][1].number_format = MONEY_FORMAT
-        ws[ws.max_row][2].number_format = MONEY_FORMAT
 
     auto_width(ws)
     return make_response(wb, f"natural_oil_general_report_{today_str()}.xlsx")
@@ -331,7 +327,7 @@ def export_sales(
     style_header_row(ws)
     ws.freeze_panes = "A2"
 
-    money_cols = [6, 7, 8, 9, 10, 11, 12, 13]
+    ws.freeze_panes = "A2"
 
     for s in sales:
         ws.append([
@@ -340,37 +336,33 @@ def export_sales(
             s.product.name if s.product else "",
             f"#{s.inventory_batch_id}",
             s.quantity_liters,
-            s.purchase_price_per_liter,
-            s.sale_price_per_liter,
-            s.profit_per_liter,
-            s.total_sale_amount,
-            s.total_cost,
-            s.total_profit,
-            s.paid_amount,
-            s.debt_amount,
+            format_money(s.purchase_price_per_liter),
+            format_money(s.sale_price_per_liter),
+            format_money(s.profit_per_liter),
+            format_money(s.total_sale_amount),
+            format_money(s.total_cost),
+            format_money(s.total_profit),
+            format_money(s.paid_amount),
+            format_money(s.debt_amount),
             get_sale_payment_types(s),
             STATUS_LABELS.get(s.status, s.status),
             s.note or "",
         ])
-        for col in money_cols:
-            ws[ws.max_row][col - 1].number_format = MONEY_FORMAT
 
     if sales:
         ws.append([
             "JAMI", "", "", "",
             sum(s.quantity_liters for s in sales),
             "", "", "",
-            sum(s.total_sale_amount for s in sales),
-            sum(s.total_cost for s in sales),
-            sum(s.total_profit for s in sales),
-            sum(s.paid_amount for s in sales),
-            sum(s.debt_amount for s in sales),
+            format_money(sum(s.total_sale_amount for s in sales)),
+            format_money(sum(s.total_cost for s in sales)),
+            format_money(sum(s.total_profit for s in sales)),
+            format_money(sum(s.paid_amount for s in sales)),
+            format_money(sum(s.debt_amount for s in sales)),
             "", "", "",
         ])
         for cell in ws[ws.max_row]:
             cell.font = SUMMARY_FONT
-        for col in money_cols:
-            ws[ws.max_row][col - 1].number_format = MONEY_FORMAT
 
     auto_width(ws)
     return make_response(wb, f"natural_oil_sales_{today_str()}.xlsx")
@@ -422,7 +414,7 @@ def export_purchases(
     style_header_row(ws)
     ws.freeze_panes = "A2"
 
-    money_cols = [5, 6, 7, 8]
+    ws.freeze_panes = "A2"
 
     for p in items:
         ws.append([
@@ -430,31 +422,27 @@ def export_purchases(
             p.supplier.name if p.supplier else "",
             p.product.name if p.product else "",
             p.quantity_liters,
-            p.purchase_price_per_liter,
-            p.total_amount,
-            p.paid_amount,
-            p.debt_amount,
+            format_money(p.purchase_price_per_liter),
+            format_money(p.total_amount),
+            format_money(p.paid_amount),
+            format_money(p.debt_amount),
             get_purchase_payment_types(p),
             STATUS_LABELS.get(p.status, p.status),
             p.note or "",
         ])
-        for col in money_cols:
-            ws[ws.max_row][col - 1].number_format = MONEY_FORMAT
 
     if items:
         ws.append([
             "JAMI", "", "",
             sum(p.quantity_liters for p in items),
             "",
-            sum(p.total_amount for p in items),
-            sum(p.paid_amount for p in items),
-            sum(p.debt_amount for p in items),
+            format_money(sum(p.total_amount for p in items)),
+            format_money(sum(p.paid_amount for p in items)),
+            format_money(sum(p.debt_amount for p in items)),
             "", "", "",
         ])
         for cell in ws[ws.max_row]:
             cell.font = SUMMARY_FONT
-        for col in money_cols:
-            ws[ws.max_row][col - 1].number_format = MONEY_FORMAT
 
     auto_width(ws)
     return make_response(wb, f"natural_oil_purchases_{today_str()}.xlsx")
@@ -494,7 +482,7 @@ def export_inventory(
     style_header_row(ws)
     ws.freeze_panes = "A2"
 
-    money_cols = [3, 6]
+    ws.freeze_panes = "A2"
     total_remaining_value = 0
     total_remaining_qty = 0
 
@@ -505,27 +493,23 @@ def export_inventory(
         ws.append([
             b.product.name if b.product else "",
             b.supplier.name if b.supplier else "",
-            b.purchase_price_per_liter,
+            format_money(b.purchase_price_per_liter),
             b.initial_quantity_liters,
             b.remaining_quantity_liters,
-            remaining_value,
+            format_money(remaining_value),
             STATUS_LABELS.get(b.status, b.status),
             str(b.created_at.date()) if b.created_at else "",
         ])
-        for col in money_cols:
-            ws[ws.max_row][col - 1].number_format = MONEY_FORMAT
 
     if items:
         ws.append([
             "JAMI", "", "", "",
             total_remaining_qty,
-            total_remaining_value,
+            format_money(total_remaining_value),
             "", "",
         ])
         for cell in ws[ws.max_row]:
             cell.font = SUMMARY_FONT
-        for col in money_cols:
-            ws[ws.max_row][col - 1].number_format = MONEY_FORMAT
 
     auto_width(ws)
     return make_response(wb, f"natural_oil_inventory_{today_str()}.xlsx")
@@ -562,34 +546,30 @@ def export_customer_debts(
     style_header_row(ws)
     ws.freeze_panes = "A2"
 
-    money_cols = [4, 5, 6]
+    ws.freeze_panes = "A2"
 
     for d in items:
         ws.append([
             str(d.created_at.date()) if d.created_at else "",
             d.customer.name if d.customer else "",
             d.sale_id,
-            d.original_amount,
-            d.paid_amount,
-            d.remaining_amount,
+            format_money(d.original_amount),
+            format_money(d.paid_amount),
+            format_money(d.remaining_amount),
             STATUS_LABELS.get(d.status, d.status),
             str(d.last_payment_date) if d.last_payment_date else "—",
         ])
-        for col in money_cols:
-            ws[ws.max_row][col - 1].number_format = MONEY_FORMAT
 
     if items:
         ws.append([
             "JAMI", "", "",
-            sum(d.original_amount for d in items),
-            sum(d.paid_amount for d in items),
-            sum(d.remaining_amount for d in items),
+            format_money(sum(d.original_amount for d in items)),
+            format_money(sum(d.paid_amount for d in items)),
+            format_money(sum(d.remaining_amount for d in items)),
             "", "",
         ])
         for cell in ws[ws.max_row]:
             cell.font = SUMMARY_FONT
-        for col in money_cols:
-            ws[ws.max_row][col - 1].number_format = MONEY_FORMAT
 
     auto_width(ws)
     return make_response(wb, f"natural_oil_customer_debts_{today_str()}.xlsx")
@@ -626,34 +606,30 @@ def export_supplier_debts(
     style_header_row(ws)
     ws.freeze_panes = "A2"
 
-    money_cols = [4, 5, 6]
+    ws.freeze_panes = "A2"
 
     for d in items:
         ws.append([
             str(d.created_at.date()) if d.created_at else "",
             d.supplier.name if d.supplier else "",
             d.purchase_id,
-            d.original_amount,
-            d.paid_amount,
-            d.remaining_amount,
+            format_money(d.original_amount),
+            format_money(d.paid_amount),
+            format_money(d.remaining_amount),
             STATUS_LABELS.get(d.status, d.status),
             str(d.last_payment_date) if d.last_payment_date else "—",
         ])
-        for col in money_cols:
-            ws[ws.max_row][col - 1].number_format = MONEY_FORMAT
 
     if items:
         ws.append([
             "JAMI", "", "",
-            sum(d.original_amount for d in items),
-            sum(d.paid_amount for d in items),
-            sum(d.remaining_amount for d in items),
+            format_money(sum(d.original_amount for d in items)),
+            format_money(sum(d.paid_amount for d in items)),
+            format_money(sum(d.remaining_amount for d in items)),
             "", "",
         ])
         for cell in ws[ws.max_row]:
             cell.font = SUMMARY_FONT
-        for col in money_cols:
-            ws[ws.max_row][col - 1].number_format = MONEY_FORMAT
 
     auto_width(ws)
     return make_response(wb, f"natural_oil_supplier_debts_{today_str()}.xlsx")
@@ -699,18 +675,16 @@ def export_expenses(
         ws.append([
             str(e.date),
             e.category.name if e.category else "",
-            e.amount,
+            format_money(e.amount),
             PAYMENT_LABELS.get(e.payment_type, e.payment_type),
             STATUS_LABELS.get(e.status, e.status),
             e.note or "",
         ])
-        ws[ws.max_row][2].number_format = MONEY_FORMAT
 
     if items:
-        ws.append(["JAMI", "", sum(e.amount for e in items), "", "", ""])
+        ws.append(["JAMI", "", format_money(sum(e.amount for e in items)), "", "", ""])
         for cell in ws[ws.max_row]:
             cell.font = SUMMARY_FONT
-        ws[ws.max_row][2].number_format = MONEY_FORMAT
 
     auto_width(ws)
     return make_response(wb, f"natural_oil_expenses_{today_str()}.xlsx")
@@ -768,27 +742,23 @@ def export_money_movements(
             MOVEMENT_LABELS.get(m.movement_type, m.movement_type),
             PAYMENT_LABELS.get(m.payment_type, m.payment_type),
             DIRECTION_LABELS.get(m.direction, m.direction),
-            m.amount,
+            format_money(m.amount),
             TABLE_LABELS.get(m.related_table, m.related_table or ""),
             m.note or "",
         ])
-        ws[ws.max_row][4].number_format = MONEY_FORMAT
 
     if items:
-        ws.append(["JAMI KIRIM", "", "", "", total_in, "", ""])
+        ws.append(["JAMI KIRIM", "", "", "", format_money(total_in), "", ""])
         for cell in ws[ws.max_row]:
             cell.font = SUMMARY_FONT
-        ws[ws.max_row][4].number_format = MONEY_FORMAT
 
-        ws.append(["JAMI CHIQIM", "", "", "", total_out, "", ""])
+        ws.append(["JAMI CHIQIM", "", "", "", format_money(total_out), "", ""])
         for cell in ws[ws.max_row]:
             cell.font = SUMMARY_FONT
-        ws[ws.max_row][4].number_format = MONEY_FORMAT
 
-        ws.append(["SALDO", "", "", "", total_in - total_out, "", ""])
+        ws.append(["JAMI BALANS", "", "", "", format_money(total_in - total_out), "", ""])
         for cell in ws[ws.max_row]:
             cell.font = SUMMARY_FONT
-        ws[ws.max_row][4].number_format = MONEY_FORMAT
 
     auto_width(ws)
     return make_response(wb, f"natural_oil_movements_{today_str()}.xlsx")

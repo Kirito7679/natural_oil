@@ -109,13 +109,6 @@ def adjust_balance(
         direction = MovementDirection.INCOME.value
     else:
         direction = MovementDirection.OUTGOING.value
-        # Check if balance is sufficient for negative adjustment
-        if acc.current_balance + amount < 0:
-            raise ValueError(
-                f"Balansda yetarli mablag' yo'q. "
-                f"Joriy balans: {acc.current_balance:,.0f}, "
-                f"Tuzatish: {amount:,.0f}"
-            )
 
     acc.current_balance += amount
 
@@ -157,13 +150,6 @@ def update_balance(
     now = datetime.now(timezone.utc)
 
     if direction == MovementDirection.OUTGOING:
-        if acc.current_balance < amount:
-            type_label = "Naqd" if payment_type == PaymentType.CASH else "Perechisleniya"
-            raise ValueError(
-                f"{type_label} balansda yetarli mablag' yo'q. "
-                f"Joriy balans: {acc.current_balance:,.0f}, "
-                f"Kerakli summa: {amount:,.0f}"
-            )
         acc.current_balance -= amount
     else:
         acc.current_balance += amount

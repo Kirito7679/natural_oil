@@ -8,6 +8,21 @@ from app.schemas.product import ProductResponse
 from app.schemas.partner import PartnerResponse
 
 
+class InitialFuelStockRequest(BaseModel):
+    date: date
+    product_id: int
+    quantity_liters: float
+    purchase_price_per_liter: float
+    note: str | None = None
+
+    @field_validator("quantity_liters", "purchase_price_per_liter")
+    @classmethod
+    def validate_positive(cls, v: float) -> float:
+        if v <= 0:
+            raise ValueError("Miqdor va narx 0 dan katta bo'lishi kerak")
+        return v
+
+
 class PurchasePaymentCreate(BaseModel):
     payment_type: PaymentType
     amount: float

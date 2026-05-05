@@ -6,7 +6,8 @@ from sqlalchemy.orm import Session
 from app.models.purchase import Purchase, PurchasePayment
 from app.models.inventory import InventoryBatch
 from app.models.debt import SupplierDebt
-from app.schemas.purchase import PurchaseCreate
+from app.models.partner import Partner
+from app.schemas.purchase import PurchaseCreate, InitialFuelStockRequest
 from app.services.balance_service import update_balance
 from app.utils.enums import PaymentType, MovementType, MovementDirection
 
@@ -88,6 +89,77 @@ def create_purchase(
         new_batch = InventoryBatch(
             product_id=data.product_id,
             supplier_id=data.supplier_id,
+            purchase_id=purchase.id,
+            purchase_price_per_liter=data.purchase_price_per_liter,
+            initial_quantity_liters=data.quantity_liters,
+            remaining_quantity_liters=data.quantity_liters,
+        )
+        db.add(new_batch)
+
+    db.commit()
+    db.refresh(purchase)
+    return purchase
+
+
+def create_initial_fuel_stock(
+    db: Session, data: InitialFuelStockRequest, user_id: int | None = None
+) -> Purchase:
+    """Creates initial fuel stock.
+    Bypasses balance deduction, supplier debt creation, and payments.
+    Uses a dummy system supplier to ensure DB integrity without skewing reports.
+    """
+    # 1. Find or create dummy supplier
+    dummy_name = "O'zimiz (Boshlang'ich qoldiq)"
+    supplier = db.query(Partner).filter(Partner.name == dummy_name).first()
+    if not supplier:
+        supplier = Partner(
+            name=dummy_name,
+            phone="+998000000000",
+            type="supplier",
+            is_active=True
+        )
+        db.add(supplier)
+        db.flush()
+
+    total_amount = data.quantity_liters * data.purchase_price_per_liter
+
+    # 2. Create dummy Purchase
+    # paid_amount=total_amount but 0 payments, debt=0.
+    # We add a clear note so it's distinguishable in reports.
+    purchase = Purchase(
+        date=data.date,
+        supplier_id=supplier.id,
+        product_id=data.product_id,
+        quantity_liters=data.quantity_liters,
+        purchase_price_per_liter=data.purchase_price_per_liter,
+        total_amount=total_amount,
+        paid_amount=total_amount,
+        debt_amount=0.0,
+        note=data.note or "Boshlang'ich qoldiq",
+        created_by=user_id,
+    )
+    db.add(purchase)
+    db.flush()
+
+    # 3. Create Inventory Batch (no merge for initial stock usually, or merge if exact match)
+    existing_batch = (
+        db.query(InventoryBatch)
+        .filter(
+            InventoryBatch.product_id == data.product_id,
+            InventoryBatch.supplier_id == supplier.id,
+            InventoryBatch.purchase_price_per_liter == data.purchase_price_per_liter,
+            InventoryBatch.status == "active",
+        )
+        .first()
+    )
+
+    if existing_batch:
+        existing_batch.initial_quantity_liters += data.quantity_liters
+        existing_batch.remaining_quantity_liters += data.quantity_liters
+    else:
+        new_batch = InventoryBatch(
+            product_id=data.product_id,
+            supplier_id=supplier.id,
             purchase_id=purchase.id,
             purchase_price_per_liter=data.purchase_price_per_liter,
             initial_quantity_liters=data.quantity_liters,

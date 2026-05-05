@@ -23,6 +23,20 @@ class InitialBalanceRequest(BaseModel):
         return v
 
 
+class AddInitialBalanceRequest(BaseModel):
+    payment_type: PaymentType
+    amount: float
+    date: str
+    note: str = ""
+
+    @field_validator("amount")
+    @classmethod
+    def must_be_positive(cls, v: float) -> float:
+        if v <= 0:
+            raise ValueError("Summa 0 dan katta bo'lishi kerak")
+        return v
+
+
 class BalanceAdjustmentRequest(BaseModel):
     payment_type: PaymentType
     amount: float

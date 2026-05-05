@@ -12,6 +12,7 @@ from app.models.expense import Expense
 from app.models.debt import CustomerDebt, SupplierDebt
 from app.models.money_movement import MoneyMovement
 from app.models.balance import BalanceAccount
+from app.models.inventory import InventoryBatch
 from app.utils.deps import get_current_user
 
 router = APIRouter(prefix="/api/reports", tags=["Reports"])
@@ -30,12 +31,23 @@ def get_dashboard(
     cash_balance = next((a.current_balance for a in accounts if a.type == "cash"), 0.0)
     bank_balance = next((a.current_balance for a in accounts if a.type == "bank_transfer"), 0.0)
 
-    # Today's sales
+    # Today's sales (operational stats)
     today_sales = db.query(Sale).filter(
         Sale.date == today, Sale.status == "active"
     ).all()
-    today_sale_amount = sum(s.total_sale_amount for s in today_sales)
     today_profit = sum(s.total_profit for s in today_sales)
+
+    # Today's income money (Bugungi tushum)
+    today_movements = db.query(MoneyMovement).filter(
+        func.date(MoneyMovement.date) == today,
+        MoneyMovement.direction == "income"
+    ).all()
+    
+    # Bugungi tushum includes all actual money in except initial_balance
+    today_income_amount = sum(
+        m.amount for m in today_movements 
+        if m.movement_type != "initial_balance"
+    )
 
     # Today's purchases
     today_purchases = db.query(Purchase).filter(
@@ -58,6 +70,10 @@ def get_dashboard(
         func.sum(SupplierDebt.remaining_amount)
     ).filter(SupplierDebt.status == "active").scalar() or 0.0
 
+    # Total inventory value
+    active_batches = db.query(InventoryBatch).filter(InventoryBatch.status == "active").all()
+    inventory_value = sum(b.remaining_quantity_liters * b.purchase_price_per_liter for b in active_batches)
+
     # Recent movements (last 10)
     recent_movements = db.query(MoneyMovement).order_by(
         MoneyMovement.id.desc()
@@ -70,7 +86,7 @@ def get_dashboard(
             "total": cash_balance + bank_balance,
         },
         "today": {
-            "sale_amount": today_sale_amount,
+            "income_amount": today_income_amount,
             "sale_count": len(today_sales),
             "profit": today_profit,
             "purchase_amount": today_purchase_amount,
@@ -82,6 +98,7 @@ def get_dashboard(
             "customer_total": total_customer_debt,
             "supplier_total": total_supplier_debt,
         },
+        "inventory_value": inventory_value,
         "recent_movements": [
             {
                 "id": m.id,
@@ -191,4 +208,154 @@ def get_report(
             "bank_net": bank_income - bank_outgoing,
         },
         "net_profit": total_profit - total_expense_amount,
+    }
+
+
+@router.get("/daily-transactions")
+def get_daily_transactions(
+    date_val: date = Query(..., alias="date"),
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_user),
+):
+    """Tanlangan kun uchun barcha tranzaksiyalar tarixi."""
+    
+    start_of_day = datetime.combine(date_val, datetime.min.time())
+    end_of_day = datetime.combine(date_val, datetime.max.time())
+    
+    # Calculate opening balance: all movements before start_of_day
+    past_movements = db.query(MoneyMovement).filter(MoneyMovement.date < start_of_day).all()
+    opening_cash = sum(m.amount if m.direction == "income" else -m.amount for m in past_movements if m.payment_type == "cash")
+    opening_bank = sum(m.amount if m.direction == "income" else -m.amount for m in past_movements if m.payment_type == "bank_transfer")
+    
+    transactions = []
+    
+    # 1. Add all money movements for the day
+    day_movements = db.query(MoneyMovement).filter(
+        MoneyMovement.date >= start_of_day,
+        MoneyMovement.date <= end_of_day
+    ).all()
+    
+    cash_in = 0
+    cash_out = 0
+    bank_in = 0
+    bank_out = 0
+    
+    MOVEMENT_LABELS = {
+        "initial_balance": "Boshlang'ich balans",
+        "purchase_payment": "Xarid to'lovi",
+        "sale_payment": "Sotuv to'lovi",
+        "customer_debt_payment": "Mijoz qarz to'lovi",
+        "supplier_debt_payment": "Yetkazuvchi qarz to'lovi",
+        "expense": "Xarajat",
+        "balance_adjustment": "Balans tuzatish",
+        "cancellation": "Bekor qilish",
+    }
+    
+    for m in day_movements:
+        if m.direction == "income":
+            if m.payment_type == "cash": cash_in += m.amount
+            if m.payment_type == "bank_transfer": bank_in += m.amount
+        else:
+            if m.payment_type == "cash": cash_out += m.amount
+            if m.payment_type == "bank_transfer": bank_out += m.amount
+            
+        partner_name = "—"
+        product_name = "—"
+        quantity = None
+        
+        # Try to resolve partner/product if tied to sale or purchase
+        if m.movement_type in ("sale_payment", "customer_debt_payment") and m.related_table == "sales" and m.related_id:
+            s = db.query(Sale).filter(Sale.id == m.related_id).first()
+            if s:
+                partner_name = s.customer.name if s.customer else "—"
+                product_name = s.product.name if s.product else "—"
+        elif m.movement_type in ("purchase_payment", "supplier_debt_payment") and m.related_table == "purchases" and m.related_id:
+            p = db.query(Purchase).filter(Purchase.id == m.related_id).first()
+            if p:
+                partner_name = p.supplier.name if p.supplier else "—"
+                product_name = p.product.name if p.product else "—"
+        elif m.movement_type == "expense" and m.related_table == "expenses" and m.related_id:
+            e = db.query(Expense).filter(Expense.id == m.related_id).first()
+            if e and e.category:
+                product_name = e.category.name
+
+        transactions.append({
+            "time": m.date.strftime("%H:%M:%S"),
+            "type": m.movement_type,
+            "title": MOVEMENT_LABELS.get(m.movement_type, m.movement_type),
+            "partner_name": partner_name,
+            "product_name": product_name,
+            "quantity": quantity,
+            "amount": m.amount,
+            "payment_type": "Naqd" if m.payment_type == "cash" else "Perechisleniya",
+            "direction": m.direction,
+            "note": m.note or "",
+            "sort_time": m.date
+        })
+
+    # 2. Add operational sales for the day (stock out)
+    sales = db.query(Sale).filter(Sale.date == date_val, Sale.status == "active").all()
+    for s in sales:
+        transactions.append({
+            "time": s.created_at.strftime("%H:%M:%S"),
+            "type": "sale",
+            "title": "Sotuv (tovar chiqimi)",
+            "partner_name": s.customer.name if s.customer else "—",
+            "product_name": s.product.name if s.product else "—",
+            "quantity": s.quantity_liters,
+            "amount": s.total_sale_amount,
+            "payment_type": "—",
+            "direction": "stock_only",
+            "note": s.note or "",
+            "sort_time": s.created_at
+        })
+
+    # 3. Add operational purchases for the day (stock in)
+    purchases = db.query(Purchase).filter(Purchase.date == date_val, Purchase.status == "active").all()
+    for p in purchases:
+        partner_name = p.supplier.name if p.supplier else "—"
+        is_initial_stock = (partner_name == "O'zimiz (Boshlang'ich qoldiq)")
+        
+        transactions.append({
+            "time": p.created_at.strftime("%H:%M:%S"),
+            "type": "initial_stock" if is_initial_stock else "purchase",
+            "title": "Boshlang'ich qoldiq kiritish" if is_initial_stock else "Prixod (tovar kirimi)",
+            "partner_name": partner_name,
+            "product_name": p.product.name if p.product else "—",
+            "quantity": p.quantity_liters,
+            "amount": p.total_amount,
+            "payment_type": "—",
+            "direction": "stock_only",
+            "note": p.note or "",
+            "sort_time": p.created_at
+        })
+        
+    # Sort all transactions by time
+    transactions.sort(key=lambda x: x["sort_time"])
+    
+    # Remove sort_time before returning
+    for t in transactions:
+        del t["sort_time"]
+
+    return {
+        "date": str(date_val),
+        "opening_balance": {
+            "cash": opening_cash,
+            "bank_transfer": opening_bank,
+            "total": opening_cash + opening_bank
+        },
+        "transactions": transactions,
+        "totals": {
+            "cash_in": cash_in,
+            "cash_out": cash_out,
+            "bank_in": bank_in,
+            "bank_out": bank_out,
+            "total_income": cash_in + bank_in,
+            "total_outgoing": cash_out + bank_out
+        },
+        "closing_balance": {
+            "cash": opening_cash + cash_in - cash_out,
+            "bank_transfer": opening_bank + bank_in - bank_out,
+            "total": (opening_cash + cash_in - cash_out) + (opening_bank + bank_in - bank_out)
+        }
     }

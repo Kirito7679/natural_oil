@@ -22,8 +22,14 @@ export default function Reports() {
     const [report, setReport] = useState(null);
     const [loading, setLoading] = useState(false);
 
+    // Daily transactions
+    const [dailyDate, setDailyDate] = useState(todayStr());
+    const [dailyTx, setDailyTx] = useState(null);
+    const [dailyLoading, setDailyLoading] = useState(false);
+
     useEffect(() => {
         fetchReport();
+        fetchDailyTx();
     }, []);
 
     async function fetchReport() {
@@ -41,6 +47,20 @@ export default function Reports() {
             console.error(e);
         } finally {
             setLoading(false);
+        }
+    }
+
+    async function fetchDailyTx() {
+        setDailyLoading(true);
+        try {
+            const res = await client.get(`/reports/daily-transactions`, {
+                params: { date: dailyDate },
+            });
+            setDailyTx(res.data);
+        } catch (e) {
+            console.error(e);
+        } finally {
+            setDailyLoading(false);
         }
     }
 
@@ -277,7 +297,7 @@ export default function Reports() {
                                     color: 'var(--danger)',
                                 },
                                 {
-                                    label: 'Naqd saldo',
+                                    label: 'Naqd balans (Hisoblangan)',
                                     value: formatMoney(report.cash_flow.cash_net),
                                     color:
                                         report.cash_flow.cash_net >= 0
@@ -295,10 +315,18 @@ export default function Reports() {
                                     color: 'var(--danger)',
                                 },
                                 {
-                                    label: 'Perechisleniya saldo',
+                                    label: 'Perechisleniya balans (Hisoblangan)',
                                     value: formatMoney(report.cash_flow.bank_net),
                                     color:
                                         report.cash_flow.bank_net >= 0
+                                            ? 'var(--success)'
+                                            : 'var(--danger)',
+                                },
+                                {
+                                    label: 'Jami balans (Hisoblangan)',
+                                    value: formatMoney(report.cash_flow.cash_net + report.cash_flow.bank_net),
+                                    color:
+                                        (report.cash_flow.cash_net + report.cash_flow.bank_net) >= 0
                                             ? 'var(--success)'
                                             : 'var(--danger)',
                                 },
@@ -384,6 +412,104 @@ export default function Reports() {
                             </table>
                         </div>
                     )}
+                    
+                    {/* Daily Transactions Section */}
+                    <div className="card" style={{ padding: '1.5rem', marginTop: '2rem' }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                            <h2 style={{ margin: 0, fontSize: '1.25rem' }}>Kunlik tranzaksiyalar</h2>
+                            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                                <input
+                                    type="date"
+                                    className="form-control"
+                                    value={dailyDate}
+                                    onChange={(e) => setDailyDate(e.target.value)}
+                                    style={{ margin: 0 }}
+                                />
+                                <button
+                                    className="btn btn-primary"
+                                    onClick={fetchDailyTx}
+                                    disabled={dailyLoading}
+                                >
+                                    {dailyLoading ? '...' : "Ko'rish / Yangilash"}
+                                </button>
+                            </div>
+                        </div>
+
+                        {!dailyTx ? (
+                            <p>Yuklanmoqda...</p>
+                        ) : (
+                            <div>
+                                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '1.5rem', background: 'var(--bg-input)', padding: '1rem', borderRadius: '8px' }}>
+                                    <div>
+                                        <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>KUN BOSHI BALANSI</div>
+                                        <div style={{ fontWeight: 'bold' }}>Jami: {formatMoney(dailyTx.opening_balance.total)}</div>
+                                        <div style={{ fontSize: '0.85rem' }}>Naqd: {formatMoney(dailyTx.opening_balance.cash)}</div>
+                                        <div style={{ fontSize: '0.85rem' }}>Perechisleniya: {formatMoney(dailyTx.opening_balance.bank_transfer)}</div>
+                                    </div>
+                                    <div>
+                                        <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>KUNLIK PUL AYLANMASI</div>
+                                        <div style={{ color: 'var(--success)', fontWeight: 'bold' }}>Kirim: +{formatMoney(dailyTx.totals.total_income)}</div>
+                                        <div style={{ color: 'var(--danger)', fontWeight: 'bold' }}>Chiqim: -{formatMoney(dailyTx.totals.total_outgoing)}</div>
+                                    </div>
+                                    <div>
+                                        <div style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>KUN YAKUNI BALANSI</div>
+                                        <div style={{ fontWeight: 'bold', color: dailyTx.closing_balance.total >= 0 ? 'var(--success)' : 'var(--danger)' }}>
+                                            Jami: {formatMoney(dailyTx.closing_balance.total)}
+                                        </div>
+                                        <div style={{ fontSize: '0.85rem', color: dailyTx.closing_balance.cash >= 0 ? 'var(--success)' : 'var(--danger)' }}>
+                                            Naqd: {formatMoney(dailyTx.closing_balance.cash)}
+                                        </div>
+                                        <div style={{ fontSize: '0.85rem', color: dailyTx.closing_balance.bank_transfer >= 0 ? 'var(--success)' : 'var(--danger)' }}>
+                                            Perechisleniya: {formatMoney(dailyTx.closing_balance.bank_transfer)}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="table-wrapper">
+                                    <table className="data-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Vaqt</th>
+                                                <th>Tur</th>
+                                                <th>Hamkor</th>
+                                                <th>Mahsulot</th>
+                                                <th className="text-right">Miqdor</th>
+                                                <th>To'lov turi</th>
+                                                <th className="text-right">Kirim</th>
+                                                <th className="text-right">Chiqim</th>
+                                                <th>Izoh</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {dailyTx.transactions.length === 0 ? (
+                                                <tr>
+                                                    <td colSpan={9} className="text-center">Bu kunda tranzaksiyalar yo'q</td>
+                                                </tr>
+                                            ) : (
+                                                dailyTx.transactions.map((t, idx) => (
+                                                    <tr key={idx}>
+                                                        <td>{t.time}</td>
+                                                        <td>{t.title}</td>
+                                                        <td>{t.partner_name}</td>
+                                                        <td>{t.product_name}</td>
+                                                        <td className="text-right">{t.quantity ? `${t.quantity} L` : '—'}</td>
+                                                        <td>{t.payment_type}</td>
+                                                        <td className="text-right text-success font-medium">
+                                                            {t.direction === 'income' ? `+${formatMoney(t.amount)}` : (t.direction === 'stock_only' && t.type === 'sale' ? formatMoney(t.amount) : '')}
+                                                        </td>
+                                                        <td className="text-right text-danger font-medium">
+                                                            {t.direction === 'outgoing' ? `-${formatMoney(t.amount)}` : (t.direction === 'stock_only' && (t.type === 'purchase' || t.type === 'initial_stock') ? formatMoney(t.amount) : '')}
+                                                        </td>
+                                                        <td style={{ maxWidth: '150px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={t.note}>{t.note}</td>
+                                                    </tr>
+                                                ))
+                                            )}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        )}
+                    </div>
                 </>
             )}
         </div>

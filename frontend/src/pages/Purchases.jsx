@@ -3,10 +3,11 @@
  * All UI labels in Uzbek.
  */
 import { useState, useEffect } from 'react';
+import client from '../api/client';
 import { getPurchases, createPurchase, cancelPurchase } from '../api/purchases';
 import { getProducts } from '../api/products';
 import { getPartners } from '../api/partners';
-import { formatDateTime, formatCurrency, formatNumber } from '../utils/formatters';
+import { formatDateTime, formatCurrency, formatNumber, formatMoneyInput, parseMoneyInput } from '../utils/formatters';
 import { downloadExcel } from '../utils/excelDownload';
 import Modal from '../components/Modal';
 
@@ -19,6 +20,11 @@ export default function Purchases() {
   const [modalOpen, setModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+
+  const [initialStockOpen, setInitialStockOpen] = useState(false);
+  const [initialForm, setInitialForm] = useState({ product_id: '', quantity_liters: '', purchase_price_per_liter: '', note: '' });
+  const [initialLoading, setInitialLoading] = useState(false);
+  const [initialError, setInitialError] = useState('');
 
   const today = new Date().toISOString().split('T')[0];
 
@@ -71,16 +77,16 @@ export default function Purchases() {
       const qty = parseFloat(next.quantity_liters) || 0;
 
       if (next.calc_mode === 'price') {
-        const price = parseFloat(next.purchase_price_per_liter) || 0;
+        const price = parseMoneyInput(next.purchase_price_per_liter) || 0;
         next._calculated_total = qty * price;
         next._calculated_price = price;
       } else {
-        const total = parseFloat(next.total_amount) || 0;
+        const total = parseMoneyInput(next.total_amount) || 0;
         next._calculated_total = total;
         next._calculated_price = qty > 0 ? total / qty : 0;
       }
 
-      const paid = parseFloat(next.paid_amount) || 0;
+      const paid = parseMoneyInput(next.paid_amount) || 0;
       next._calculated_debt = Math.max(0, next._calculated_total - paid);
 
       return next;
@@ -108,12 +114,12 @@ export default function Purchases() {
       };
 
       if (form.calc_mode === 'price') {
-        payload.purchase_price_per_liter = parseFloat(form.purchase_price_per_liter);
+        payload.purchase_price_per_liter = parseMoneyInput(form.purchase_price_per_liter);
       } else {
-        payload.total_amount = parseFloat(form.total_amount);
+        payload.total_amount = parseMoneyInput(form.total_amount);
       }
 
-      const paidAmount = parseFloat(form.paid_amount) || 0;
+      const paidAmount = parseMoneyInput(form.paid_amount) || 0;
       if (paidAmount > 0) {
         payload.payments.push({
           payment_type: form.payment_type,
@@ -142,6 +148,36 @@ export default function Purchases() {
     }
   };
 
+  const handleInitialStockSubmit = async (e) => {
+    e.preventDefault();
+    if (!initialForm.product_id) return setInitialError("Mahsulot tanlang");
+    
+    const qty = parseMoneyInput(initialForm.quantity_liters);
+    const price = parseMoneyInput(initialForm.purchase_price_per_liter);
+    
+    if (!qty || qty <= 0) return setInitialError("Miqdorni to'g'ri kiriting");
+    if (!price || price <= 0) return setInitialError("Narxni to'g'ri kiriting");
+
+    setInitialLoading(true);
+    setInitialError('');
+    try {
+      await client.post('/purchases/initial-stock', {
+        date: today,
+        product_id: parseInt(initialForm.product_id),
+        quantity_liters: qty,
+        purchase_price_per_liter: price,
+        note: initialForm.note || null
+      });
+      setInitialStockOpen(false);
+      setInitialForm({ product_id: '', quantity_liters: '', purchase_price_per_liter: '', note: '' });
+      fetchData();
+    } catch (err) {
+      setInitialError(err.response?.data?.detail || "Xatolik yuz berdi");
+    } finally {
+      setInitialLoading(false);
+    }
+  };
+
   if (loading && purchases.length === 0) {
     return (
       <div className="page-loading">
@@ -159,6 +195,9 @@ export default function Purchases() {
           onClick={() => downloadExcel('purchases', {}, 'natural_oil_purchases.xlsx')}
         >
           ⬇ Excel
+        </button>
+        <button className="btn btn-secondary" onClick={() => setInitialStockOpen(true)}>
+          + O'zida bor qoldiq
         </button>
         <button className="btn btn--primary" onClick={openCreateModal}>
           + Yangi prixod
@@ -315,12 +354,10 @@ export default function Purchases() {
               <div className="form-group">
                 <label>1 litr sotib olish narxi (UZS) *</label>
                 <input
-                  type="number"
-                  min="0.01"
-                  step="0.01"
+                  type="text"
                   value={form.purchase_price_per_liter}
-                  onChange={(e) => updateField('purchase_price_per_liter', e.target.value)}
-                  placeholder="0.00"
+                  onChange={(e) => updateField('purchase_price_per_liter', formatMoneyInput(e.target.value))}
+                  placeholder="Masalan: 9 000"
                   required
                 />
                 <div style={{ marginTop: '8px', fontSize: '13px', color: 'var(--text-secondary)' }}>
@@ -331,12 +368,10 @@ export default function Purchases() {
               <div className="form-group">
                 <label>Jami summa (UZS) *</label>
                 <input
-                  type="number"
-                  min="0.01"
-                  step="0.01"
+                  type="text"
                   value={form.total_amount}
-                  onChange={(e) => updateField('total_amount', e.target.value)}
-                  placeholder="0.00"
+                  onChange={(e) => updateField('total_amount', formatMoneyInput(e.target.value))}
+                  placeholder="Masalan: 10 000 000"
                   required
                 />
                 <div style={{ marginTop: '8px', fontSize: '13px', color: 'var(--text-secondary)' }}>
@@ -350,12 +385,10 @@ export default function Purchases() {
             <div className="form-group">
               <label>To'langan summa (UZS)</label>
               <input
-                type="number"
-                min="0"
-                step="0.01"
+                type="text"
                 value={form.paid_amount}
-                onChange={(e) => updateField('paid_amount', e.target.value)}
-                placeholder="0.00"
+                onChange={(e) => updateField('paid_amount', formatMoneyInput(e.target.value))}
+                placeholder="Masalan: 5 000 000"
               />
               <div style={{ marginTop: '8px', fontSize: '13px', color: 'var(--text-secondary)' }}>
                 Qarz: <strong className="text-danger">{formatCurrency(form._calculated_debt || 0)} UZS</strong>
@@ -397,6 +430,76 @@ export default function Purchases() {
               disabled={saving}
             >
               {saving ? 'Saqlanmoqda...' : 'Saqlash'}
+            </button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Initial Stock Modal */}
+      <Modal
+        isOpen={initialStockOpen}
+        onClose={() => setInitialStockOpen(false)}
+        title="O'zida bor qoldiq qo'shish"
+        width={500}
+      >
+        <form onSubmit={handleInitialStockSubmit}>
+          {initialError && <div className="alert alert--error">{initialError}</div>}
+          <div className="form-group">
+            <label>Mahsulot *</label>
+            <select
+              value={initialForm.product_id}
+              onChange={(e) => setInitialForm({ ...initialForm, product_id: e.target.value })}
+              required
+            >
+              <option value="">Tanlang...</option>
+              {products.map(p => (
+                <option key={p.id} value={p.id}>{p.name}</option>
+              ))}
+            </select>
+          </div>
+          <div className="form-group">
+            <label>Miqdor (Litr) *</label>
+            <input
+              type="text"
+              value={initialForm.quantity_liters}
+              onChange={(e) => setInitialForm({ ...initialForm, quantity_liters: formatMoneyInput(e.target.value) })}
+              placeholder="Masalan: 1 000"
+              required
+            />
+          </div>
+          <div className="form-group">
+            <label>1 litr tannarxi (UZS) *</label>
+            <input
+              type="text"
+              value={initialForm.purchase_price_per_liter}
+              onChange={(e) => setInitialForm({ ...initialForm, purchase_price_per_liter: formatMoneyInput(e.target.value) })}
+              placeholder="Masalan: 9 000"
+              required
+            />
+          </div>
+          <div className="form-group">
+            <label>Izoh (ixtiyoriy)</label>
+            <input
+              type="text"
+              value={initialForm.note}
+              onChange={(e) => setInitialForm({ ...initialForm, note: e.target.value })}
+              placeholder="Qo'shimcha ma'lumot..."
+            />
+          </div>
+          <div className="form-actions">
+            <button
+              type="button"
+              className="btn btn--outline"
+              onClick={() => setInitialStockOpen(false)}
+            >
+              Bekor qilish
+            </button>
+            <button
+              type="submit"
+              className="btn btn--primary"
+              disabled={initialLoading}
+            >
+              {initialLoading ? 'Saqlanmoqda...' : 'Saqlash'}
             </button>
           </div>
         </form>

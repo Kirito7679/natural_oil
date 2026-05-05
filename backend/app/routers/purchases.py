@@ -6,8 +6,8 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.purchase import Purchase
 from app.models.user import User
-from app.schemas.purchase import PurchaseCreate, PurchaseResponse, PurchaseListResponse
-from app.services.purchase_service import create_purchase, cancel_purchase
+from app.schemas.purchase import PurchaseCreate, PurchaseResponse, PurchaseListResponse, InitialFuelStockRequest
+from app.services.purchase_service import create_purchase, cancel_purchase, create_initial_fuel_stock
 from app.utils.deps import get_current_user
 
 router = APIRouter(prefix="/api/purchases", tags=["Purchases"])
@@ -52,6 +52,20 @@ def api_create_purchase(
     """Yangi prixod yaratish."""
     try:
         purchase = create_purchase(db, data, user_id=current_user.id)
+        return PurchaseResponse.model_validate(purchase)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.post("/initial-stock", response_model=PurchaseResponse, status_code=201)
+def api_create_initial_fuel_stock(
+    data: InitialFuelStockRequest,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Boshlang'ich qoldiq (O'zida bor benzin) qo'shish."""
+    try:
+        purchase = create_initial_fuel_stock(db, data, user_id=current_user.id)
         return PurchaseResponse.model_validate(purchase)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))

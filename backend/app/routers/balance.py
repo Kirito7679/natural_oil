@@ -6,9 +6,10 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.user import User
 from app.models.money_movement import MoneyMovement
-from app.schemas.balance import BalanceResponse, InitialBalanceRequest, BalanceAdjustmentRequest
+from app.schemas.balance import BalanceResponse, InitialBalanceRequest, BalanceAdjustmentRequest, AddInitialBalanceRequest
 from app.schemas.money_movement import MoneyMovementResponse, MoneyMovementListResponse
-from app.services.balance_service import get_balance, set_initial_balance, adjust_balance
+from app.services.balance_service import get_balance, set_initial_balance, adjust_balance, update_balance
+from app.utils.enums import MovementType, MovementDirection
 from app.utils.deps import get_current_user, require_admin
 
 router = APIRouter(prefix="/api/balance", tags=["Balance"])
@@ -36,6 +37,30 @@ def set_initial(
         bank_transfer_amount=request.bank_transfer_amount,
         user_id=admin.id,
     )
+
+
+@router.post("/add-initial", response_model=BalanceResponse)
+def add_initial_balance(
+    request: AddInitialBalanceRequest,
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_admin),
+):
+    """Add existing money (O'zida bor pul) to selected balance. Admin only."""
+    # We use update_balance helper directly
+    try:
+        update_balance(
+            db=db,
+            payment_type=request.payment_type,
+            amount=request.amount,
+            direction=MovementDirection.INCOME,
+            movement_type=MovementType.INITIAL_BALANCE,
+            note=request.note or "Boshlang'ich balans",
+            user_id=admin.id,
+            auto_commit=True,
+        )
+        return get_balance(db)
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 
 @router.post("/adjust", response_model=BalanceResponse)
