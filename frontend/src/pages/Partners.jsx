@@ -2,14 +2,11 @@
  * Partners page — full CRUD + premium stats detail modal.
  */
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import client from '../api/client';
 import { Eye } from 'lucide-react';
 import { getPartners, createPartner, updatePartner, togglePartner } from '../api/partners';
 import { formatCurrency, formatNumber } from '../utils/formatters';
 import Modal from '../components/Modal';
-
-const API = 'http://localhost:8000/api';
-function headers() { return { Authorization: `Bearer ${localStorage.getItem('token')}` }; }
 
 const PARTNER_TYPE_LABELS = {
   customer: 'Mijoz',
@@ -93,7 +90,7 @@ export default function Partners() {
     setStats(null);
     setStatsLoading(true);
     try {
-      const res = await axios.get(`${API}/partners/${partner.id}/stats`, { headers: headers() });
+      const res = await client.get(`/partners/${partner.id}/stats`);
       setStats(res.data);
     } catch (err) {
       console.error(err);

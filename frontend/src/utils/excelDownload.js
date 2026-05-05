@@ -1,27 +1,16 @@
 /**
  * Excel download helper — downloads .xlsx file via authenticated request.
  */
+import client from '../api/client';
+
 export async function downloadExcel(endpoint, params = {}, filename = 'export.xlsx') {
-    const token = localStorage.getItem('token');
-    const url = new URL(`http://localhost:8000/api/export/${endpoint}`);
-
-    Object.entries(params).forEach(([k, v]) => {
-        if (v !== null && v !== undefined && v !== '') {
-            url.searchParams.append(k, v);
-        }
-    });
-
     try {
-        const res = await fetch(url.toString(), {
-            headers: { Authorization: `Bearer ${token}` },
+        const res = await client.get(`/export/${endpoint}`, {
+            params,
+            responseType: 'blob'
         });
 
-        if (!res.ok) {
-            alert("Excel yuklab bo'lmadi.");
-            return;
-        }
-
-        const blob = await res.blob();
+        const blob = new Blob([res.data]);
         const objUrl = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = objUrl;

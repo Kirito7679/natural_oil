@@ -2,14 +2,8 @@
  * Reports — hisobot sahifasi.
  */
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import client from '../api/client';
 import { downloadExcel } from '../utils/excelDownload';
-
-const API = 'http://localhost:8000/api';
-
-function headers() {
-    return { Authorization: `Bearer ${localStorage.getItem('token')}` };
-}
 
 const formatMoney = (n = 0) =>
     new Intl.NumberFormat('uz-UZ').format(Math.round(n)) + " so'm";
@@ -38,8 +32,7 @@ export default function Reports() {
             const params = { date_from: dateFrom, date_to: dateTo };
             if (paymentType) params.payment_type = paymentType;
 
-            const res = await axios.get(`${API}/reports/summary`, {
-                headers: headers(),
+            const res = await client.get(`/reports/summary`, {
                 params,
             });
 

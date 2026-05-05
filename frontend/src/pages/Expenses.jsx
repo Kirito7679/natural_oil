@@ -2,11 +2,9 @@
  * Expenses — Xarajatlar sahifasi.
  */
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import client from '../api/client';
 import { downloadExcel } from '../utils/excelDownload';
 
-const API = 'http://localhost:8000/api';
-function headers() { return { Authorization: `Bearer ${localStorage.getItem('token')}` }; }
 const formatMoney = (n) => new Intl.NumberFormat('uz-UZ').format(Math.round(n)) + ' so\'m';
 const formatDate = (d) => d ? new Date(d).toLocaleDateString('ru-RU') : '—';
 const today = () => new Date().toISOString().slice(0, 10);
@@ -36,7 +34,7 @@ export default function Expenses() {
 
     async function fetchCategories() {
         try {
-            const res = await axios.get(`${API}/expenses/categories`, { headers: headers() });
+            const res = await client.get(`/expenses/categories`);
             setCategories(res.data);
         } catch { setCategories([]); }
     }
@@ -46,7 +44,7 @@ export default function Expenses() {
         try {
             const params = { limit: 100 };
             if (statusFilter !== 'all') params.status = statusFilter;
-            const res = await axios.get(`${API}/expenses`, { headers: headers(), params });
+            const res = await client.get(`/expenses`, { params });
             setExpenses(res.data.items);
         } catch { setExpenses([]); }
         finally { setLoading(false); }
@@ -58,7 +56,7 @@ export default function Expenses() {
         setFormLoading(true);
         setFormError('');
         try {
-            await axios.post(`${API}/expenses`, { ...form, amount: parseFloat(form.amount), category_id: parseInt(form.category_id) }, { headers: headers() });
+            await client.post(`/expenses`, { ...form, amount: parseFloat(form.amount), category_id: parseInt(form.category_id) });
             setShowModal(false);
             setForm({ date: today(), category_id: '', amount: '', payment_type: 'cash', note: '' });
             fetchExpenses();
@@ -70,7 +68,7 @@ export default function Expenses() {
     async function cancelExpense(id) {
         if (!window.confirm('Xarajatni bekor qilasizmi?')) return;
         try {
-            await axios.patch(`${API}/expenses/${id}/cancel`, {}, { headers: headers() });
+            await client.patch(`/expenses/${id}/cancel`, {});
             fetchExpenses();
         } catch (e) {
             alert(e.response?.data?.detail || 'Xato yuz berdi.');
@@ -82,7 +80,7 @@ export default function Expenses() {
         setCatLoading(true);
         setCatError('');
         try {
-            await axios.post(`${API}/expenses/categories`, { name: catName.trim() }, { headers: headers() });
+            await client.post(`/expenses/categories`, { name: catName.trim() });
             setCatName('');
             setShowCatModal(false);
             fetchCategories();

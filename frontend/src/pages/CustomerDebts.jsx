@@ -2,18 +2,8 @@
  * CustomerDebts — mijozlar qarzdorligi sahifasi.
  */
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import client from '../api/client';
 import { downloadExcel } from '../utils/excelDownload';
-
-const API = 'http://localhost:8000/api';
-
-function getToken() {
-    return localStorage.getItem('token');
-}
-
-function headers() {
-    return { Authorization: `Bearer ${getToken()}` };
-}
 
 const formatMoney = (n) =>
     new Intl.NumberFormat('uz-UZ').format(Math.round(n)) + ' so\'m';
@@ -39,7 +29,7 @@ export default function CustomerDebts() {
         try {
             const params = { limit: 100 };
             if (statusFilter !== 'all') params.status = statusFilter;
-            const res = await axios.get(`${API}/debts/customer`, { headers: headers(), params });
+            const res = await client.get(`/debts/customer`, { params });
             setDebts(res.data.items);
             setTotal(res.data.total);
         } catch {
@@ -64,10 +54,9 @@ export default function CustomerDebts() {
         setPayLoading(true);
         setPayError('');
         try {
-            await axios.post(
-                `${API}/debts/customer/${payModal.id}/pay`,
-                { ...payForm, amount: parseFloat(payForm.amount) },
-                { headers: headers() }
+            await client.post(
+                `/debts/customer/${payModal.id}/pay`,
+                { ...payForm, amount: parseFloat(payForm.amount) }
             );
             setPayModal(null);
             fetchDebts();

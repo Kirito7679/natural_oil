@@ -2,7 +2,7 @@
  * Dashboard — premium light dizayn, lucide iconlar.
  */
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import client from '../api/client';
 import {
   Wallet,
   Banknote,
@@ -15,8 +15,6 @@ import {
   AlertCircle,
 } from 'lucide-react';
 
-const API = 'http://localhost:8000/api';
-function headers() { return { Authorization: `Bearer ${localStorage.getItem('token')}` }; }
 const formatMoney = (n = 0) => new Intl.NumberFormat('uz-UZ').format(Math.round(n)) + ' so\'m';
 
 const MOVEMENT_LABELS = {
@@ -35,7 +33,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    axios.get(`${API}/reports/dashboard`, { headers: headers() })
+    client.get(`/reports/dashboard`)
       .then((res) => setData(res.data))
       .catch(console.error)
       .finally(() => setLoading(false));

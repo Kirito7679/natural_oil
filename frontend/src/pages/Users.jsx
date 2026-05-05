@@ -2,11 +2,9 @@
  * Users — Foydalanuvchilar (admin access management) + Tizimni tozalash.
  */
 import { useState, useEffect } from 'react';
-import axios from 'axios';
+import client from '../api/client';
 import { Lock, AlertTriangle } from 'lucide-react';
 
-const API = 'http://localhost:8000/api';
-function headers() { return { Authorization: `Bearer ${localStorage.getItem('token')}` }; }
 const formatDate = (d) => d ? new Date(d).toLocaleDateString('ru-RU') : '—';
 
 export default function Users() {
@@ -45,7 +43,7 @@ export default function Users() {
 
     async function fetchMe() {
         try {
-            const res = await axios.get(`${API}/auth/me`, { headers: headers() });
+            const res = await client.get(`/auth/me`);
             setMe(res.data);
         } catch { setMe(null); }
     }
@@ -53,7 +51,7 @@ export default function Users() {
     async function fetchUsers() {
         setLoading(true);
         try {
-            const res = await axios.get(`${API}/users`, { headers: headers() });
+            const res = await client.get(`/users`);
             setUsers(res.data);
         } catch { setUsers([]); }
         finally { setLoading(false); }
@@ -68,7 +66,7 @@ export default function Users() {
 
         setCreateLoading(true);
         try {
-            await axios.post(`${API}/users`, createForm, { headers: headers() });
+            await client.post(`/users`, createForm);
             setShowCreate(false);
             setCreateForm({ name: '', phone: '', password: '', confirm_password: '', is_active: true });
             fetchUsers();
@@ -79,9 +77,8 @@ export default function Users() {
 
     async function toggleActive(user) {
         try {
-            await axios.patch(`${API}/users/${user.id}`,
-                { is_active: !user.is_active },
-                { headers: headers() }
+            await client.patch(`/users/${user.id}`,
+                { is_active: !user.is_active }
             );
             fetchUsers();
         } catch (e) {
@@ -102,7 +99,7 @@ export default function Users() {
 
         setResetLoading(true);
         try {
-            await axios.post(`${API}/users/${resetUser.id}/reset-password`, resetForm, { headers: headers() });
+            await client.post(`/users/${resetUser.id}/reset-password`, resetForm);
             setResetUser(null);
             alert("Parol almashtirildi.");
         } catch (e) {
@@ -118,7 +115,7 @@ export default function Users() {
 
         setOwnLoading(true);
         try {
-            await axios.post(`${API}/users/me/change-password`, ownForm, { headers: headers() });
+            await client.post(`/users/me/change-password`, ownForm);
             setShowOwn(false);
             setOwnForm({ current_password: '', new_password: '', confirm_password: '' });
             alert("Parol o'zgartirildi.");
@@ -137,7 +134,7 @@ export default function Users() {
 
         setClearLoading(true);
         try {
-            await axios.post(`${API}/admin/clear-data`, clearForm, { headers: headers() });
+            await client.post(`/admin/clear-data`, clearForm);
             setShowClear(false);
             setClearForm({ password: '', confirm_text: '' });
             alert("Tizim muvaffaqiyatli tozalandi! Sahifa qayta yuklanadi.");
