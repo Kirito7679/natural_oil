@@ -16,8 +16,8 @@ class Settings(BaseSettings):
     ADMIN_PHONE: str = "+998901234567"
     ADMIN_PASSWORD: str = "admin123"
 
-    # CORS — production'da o'zgartiriladi
-    FRONTEND_URL: str = "http://localhost:5174"
+    # CORS — production domain; override in local .env for dev
+    FRONTEND_URL: str = "https://naturaloilerp.uz"
 
     model_config = SettingsConfigDict(
         env_file=".env",
