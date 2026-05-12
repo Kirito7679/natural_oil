@@ -35,6 +35,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
 
   const [showInitialBalanceModal, setShowInitialBalanceModal] = useState(false);
+  const [showBalanceBreakdown, setShowBalanceBreakdown] = useState(false);
   const [initialForm, setInitialForm] = useState({ date: new Date().toISOString().slice(0, 10), payment_type: 'cash', amount: '', note: '' });
   const [initialLoading, setInitialLoading] = useState(false);
   const [initialError, setInitialError] = useState('');
@@ -78,6 +79,7 @@ export default function Dashboard() {
   }
 
   const { balances, today, debts, recent_movements } = data;
+  const umumiyBalans = balances.cash + balances.bank_transfer + (data.inventory_value || 0) + debts.customer_total - debts.supplier_total;
 
   return (
     <div className="page">
@@ -95,10 +97,12 @@ export default function Dashboard() {
       <div className="stat-grid">
         <StatCard
           label="Umumiy balans"
-          value={formatMoney(balances.total)}
+          value={formatMoney(umumiyBalans)}
           icon={Wallet}
-          color={balances.total >= 0 ? "accent" : "danger"}
-          valueColor={balances.total >= 0 ? "gold" : "red"}
+          color={umumiyBalans >= 0 ? "success" : "danger"}
+          valueColor={umumiyBalans >= 0 ? "green" : "red"}
+          sub="Tafsilot uchun bosing"
+          onClick={() => setShowBalanceBreakdown(true)}
         />
         <StatCard
           label="Naqd"
@@ -150,7 +154,7 @@ export default function Dashboard() {
           value={formatMoney(debts.customer_total)}
           icon={Users}
           color="warning"
-          valueColor="red"
+          valueColor="green"
         />
         <StatCard
           label="Bizning qarzlar (jami)"
@@ -246,21 +250,61 @@ export default function Dashboard() {
             </div>
         </div>
       )}
+
+      {showBalanceBreakdown && (
+        <div className="modal-overlay" onClick={() => setShowBalanceBreakdown(false)}>
+            <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '400px' }}>
+                <div className="modal-header">
+                    <h2>Umumiy balans formulasi</h2>
+                    <button className="modal-close" onClick={() => setShowBalanceBreakdown(false)}>✕</button>
+                </div>
+                <div className="modal-body" style={{ lineHeight: '2' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span>Naqd:</span>
+                        <span style={{ color: balances.cash >= 0 ? 'var(--success)' : 'var(--danger)' }}>{formatMoney(balances.cash)}</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span>Perechisleniya:</span>
+                        <span style={{ color: balances.bank_transfer >= 0 ? 'var(--success)' : 'var(--danger)' }}>{formatMoney(balances.bank_transfer)}</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span>Ombor qiymati:</span>
+                        <span style={{ color: 'var(--success)' }}>+ {formatMoney(data.inventory_value || 0)}</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span>Mijozlar qarzdorligi:</span>
+                        <span style={{ color: 'var(--success)' }}>+ {formatMoney(debts.customer_total)}</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border)', paddingBottom: '0.5rem', marginBottom: '0.5rem' }}>
+                        <span>Bizning qarzlar:</span>
+                        <span style={{ color: 'var(--danger)' }}>- {formatMoney(debts.supplier_total)}</span>
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', fontSize: '1.1rem' }}>
+                        <span>Umumiy balans:</span>
+                        <span style={{ color: umumiyBalans >= 0 ? 'var(--success)' : 'var(--danger)' }}>{formatMoney(umumiyBalans)}</span>
+                    </div>
+                </div>
+                <div className="modal-footer">
+                    <button className="btn btn-secondary" onClick={() => setShowBalanceBreakdown(false)}>Yopish</button>
+                </div>
+            </div>
+        </div>
+      )}
     </div>
   );
 }
 
 /* ── Reusable StatCard ── */
-function StatCard({ label, value, sub, icon: Icon, color = 'accent', valueColor }) {
+function StatCard({ label, value, sub, icon: Icon, color = 'accent', valueColor, onClick }) {
   const valueClass = valueColor ? `stat-card-value stat-card-value--${valueColor}` : 'stat-card-value';
   return (
-    <div className="stat-card">
+    <div className="stat-card" onClick={onClick} style={{ cursor: onClick ? 'pointer' : 'default' }}>
       <div className={`stat-card-icon stat-card-icon--${color}`}>
         <Icon size={22} strokeWidth={2.2} />
       </div>
       <div className="stat-card-label">{label}</div>
       <div className={valueClass}>{value}</div>
-      {sub && <div className="stat-card-sub">{sub}</div>}
+      {sub && <div className="stat-card-sub" style={{ marginTop: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>{sub}</div>}
     </div>
   );
 }

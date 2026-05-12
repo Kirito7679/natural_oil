@@ -200,7 +200,7 @@ class TestSales:
         db_session.refresh(batch)
         assert batch.remaining_quantity_liters == 1000
 
-    def test_cancel_sale_insufficient_balance(self, client, admin_headers, db_session):
+    def test_cancel_sale_negative_balance_allowed(self, client, admin_headers, db_session):
         pid, cid, bid = self._create_dependencies(client, admin_headers)
         
         s_resp = client.post("/api/sales", json={
@@ -221,7 +221,7 @@ class TestSales:
         cash_acc.current_balance = 0.0
         db_session.commit()
         
-        # Try to cancel -> Should fail because it tries to refund 1M from 0 balance
+        # Try to cancel -> Should succeed and make balance negative
         c_resp = client.patch(f"/api/sales/{sale_id}/cancel", headers=admin_headers)
-        assert c_resp.status_code == 400
-        assert "yetarli mablag' yo'q" in c_resp.json()["detail"]
+        assert c_resp.status_code == 200
+        assert c_resp.json()["status"] == "cancelled"

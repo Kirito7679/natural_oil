@@ -80,7 +80,7 @@ class TestPurchasesAndInventory:
         batches = [b for b in inv_resp.json()["items"] if b["product_id"] == pid]
         assert sum(b["remaining_quantity_liters"] for b in batches) == 500
 
-    def test_purchase_insufficient_balance(self, client, admin_headers):
+    def test_purchase_negative_balance_allowed(self, client, admin_headers):
         pid, sid = self._create_dependencies(client, admin_headers)
         
         # We gave 100M in setup. Try to buy 200M worth
@@ -95,8 +95,9 @@ class TestPurchasesAndInventory:
             ]
         }, headers=admin_headers)
         
-        assert resp.status_code == 400
-        assert "yetarli mablag' yo'q" in resp.json()["detail"]
+        assert resp.status_code == 201
+        data = resp.json()
+        assert data["paid_amount"] == 200000000
 
     def test_inventory_batch_merging(self, client, admin_headers):
         pid, sid = self._create_dependencies(client, admin_headers)

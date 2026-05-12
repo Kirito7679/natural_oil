@@ -13,6 +13,7 @@ from app.models.debt import CustomerDebt, SupplierDebt
 from app.models.money_movement import MoneyMovement
 from app.models.balance import BalanceAccount
 from app.models.inventory import InventoryBatch
+from app.services.formatting_service import get_rich_description
 from app.utils.deps import get_current_user
 
 router = APIRouter(prefix="/api/reports", tags=["Reports"])
@@ -107,7 +108,7 @@ def get_dashboard(
                 "payment_type": m.payment_type,
                 "direction": m.direction,
                 "amount": m.amount,
-                "note": m.note,
+                "note": get_rich_description(db, m),
             }
             for m in recent_movements
         ],
@@ -264,23 +265,39 @@ def get_daily_transactions(
         quantity = None
         
         # Try to resolve partner/product if tied to sale or purchase
-        if m.movement_type in ("sale_payment", "customer_debt_payment") and m.related_table == "sales" and m.related_id:
+        if m.movement_type == "sale_payment" and m.related_table == "sales" and m.related_id:
             s = db.query(Sale).filter(Sale.id == m.related_id).first()
             if s:
                 partner_name = s.customer.name if s.customer else "—"
                 product_name = s.product.name if s.product else "—"
-        elif m.movement_type in ("purchase_payment", "supplier_debt_payment") and m.related_table == "purchases" and m.related_id:
+        elif m.movement_type == "purchase_payment" and m.related_table == "purchases" and m.related_id:
             p = db.query(Purchase).filter(Purchase.id == m.related_id).first()
             if p:
                 partner_name = p.supplier.name if p.supplier else "—"
                 product_name = p.product.name if p.product else "—"
+        elif m.movement_type == "customer_debt_payment" and m.related_table == "debt_payments" and m.related_id:
+            from app.models.debt import DebtPayment, CustomerDebt
+            dp = db.query(DebtPayment).filter(DebtPayment.id == m.related_id).first()
+            if dp:
+                debt = db.query(CustomerDebt).filter(CustomerDebt.id == dp.debt_id).first()
+                if debt and debt.customer:
+                    partner_name = debt.customer.name
+        elif m.movement_type == "supplier_debt_payment" and m.related_table == "debt_payments" and m.related_id:
+            from app.models.debt import DebtPayment, SupplierDebt
+            dp = db.query(DebtPayment).filter(DebtPayment.id == m.related_id).first()
+            if dp:
+                debt = db.query(SupplierDebt).filter(SupplierDebt.id == dp.debt_id).first()
+                if debt and debt.supplier:
+                    partner_name = debt.supplier.name
         elif m.movement_type == "expense" and m.related_table == "expenses" and m.related_id:
             e = db.query(Expense).filter(Expense.id == m.related_id).first()
             if e and e.category:
                 product_name = e.category.name
 
         transactions.append({
+            "id": m.id,
             "time": m.date.strftime("%H:%M:%S"),
+            "date": m.date.strftime("%d.%m.%Y"),
             "type": m.movement_type,
             "title": MOVEMENT_LABELS.get(m.movement_type, m.movement_type),
             "partner_name": partner_name,
@@ -290,6 +307,9 @@ def get_daily_transactions(
             "payment_type": "Naqd" if m.payment_type == "cash" else "Perechisleniya",
             "direction": m.direction,
             "note": m.note or "",
+            "rich_note": get_rich_description(db, m),
+            "related_table": m.related_table,
+            "related_id": m.related_id,
             "sort_time": m.date
         })
 
@@ -297,7 +317,9 @@ def get_daily_transactions(
     sales = db.query(Sale).filter(Sale.date == date_val, Sale.status == "active").all()
     for s in sales:
         transactions.append({
+            "id": s.id,
             "time": s.created_at.strftime("%H:%M:%S"),
+            "date": s.date.strftime("%d.%m.%Y"),
             "type": "sale",
             "title": "Sotuv (tovar chiqimi)",
             "partner_name": s.customer.name if s.customer else "—",
@@ -307,6 +329,9 @@ def get_daily_transactions(
             "payment_type": "—",
             "direction": "stock_only",
             "note": s.note or "",
+            "rich_note": "Sotuv (tovar chiqimi)",
+            "related_table": "sales",
+            "related_id": s.id,
             "sort_time": s.created_at
         })
 
@@ -317,7 +342,9 @@ def get_daily_transactions(
         is_initial_stock = (partner_name == "O'zimiz (Boshlang'ich qoldiq)")
         
         transactions.append({
+            "id": p.id,
             "time": p.created_at.strftime("%H:%M:%S"),
+            "date": p.date.strftime("%d.%m.%Y"),
             "type": "initial_stock" if is_initial_stock else "purchase",
             "title": "Boshlang'ich qoldiq kiritish" if is_initial_stock else "Prixod (tovar kirimi)",
             "partner_name": partner_name,
@@ -327,6 +354,9 @@ def get_daily_transactions(
             "payment_type": "—",
             "direction": "stock_only",
             "note": p.note or "",
+            "rich_note": "Boshlang'ich qoldiq kiritish" if is_initial_stock else "Prixod (tovar kirimi)",
+            "related_table": "purchases",
+            "related_id": p.id,
             "sort_time": p.created_at
         })
         

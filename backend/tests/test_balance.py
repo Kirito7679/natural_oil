@@ -121,8 +121,8 @@ class TestBalanceAdjustment:
         assert resp.status_code == 200
         assert resp.json()["bank_transfer_balance"] == 15_000_000
 
-    def test_insufficient_balance_rejected(self, client, admin_headers):
-        """Cannot subtract more than available."""
+    def test_negative_balance_allowed(self, client, admin_headers):
+        """Can subtract more than available (negative balance allowed)."""
         client.post("/api/balance/initial", json={
             "cash_amount": 1_000_000,
             "bank_transfer_amount": 0,
@@ -132,7 +132,8 @@ class TestBalanceAdjustment:
             "payment_type": "cash",
             "amount": -5_000_000,
         }, headers=admin_headers)
-        assert resp.status_code == 400
+        assert resp.status_code == 200
+        assert resp.json()["cash_balance"] == -4_000_000
 
     def test_card_payment_type_rejected(self, client, admin_headers):
         """Card payment type must be rejected everywhere."""

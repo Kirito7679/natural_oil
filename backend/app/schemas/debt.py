@@ -66,16 +66,22 @@ class CustomerDebtSaleInfo(BaseModel):
 class CustomerDebtResponse(BaseModel):
     id: int
     customer_id: int
-    sale_id: int
+    sale_id: int | None = None
     original_amount: float
     paid_amount: float
     remaining_amount: float
     status: str
     last_payment_date: date | None = None
     created_at: datetime
+    is_manual: bool = False
+    manual_date: date | None = None
+    manual_product_name: str | None = None
+    manual_quantity_liters: float | None = None
+    manual_price_per_liter: float | None = None
+    manual_note: str | None = None
 
     customer: PartnerResponse
-    sale: CustomerDebtSaleInfo
+    sale: CustomerDebtSaleInfo | None = None
 
     model_config = {"from_attributes": True}
 
@@ -103,16 +109,22 @@ class SupplierDebtPurchaseInfo(BaseModel):
 class SupplierDebtResponse(BaseModel):
     id: int
     supplier_id: int
-    purchase_id: int
+    purchase_id: int | None = None
     original_amount: float
     paid_amount: float
     remaining_amount: float
     status: str
     last_payment_date: date | None = None
     created_at: datetime
+    is_manual: bool = False
+    manual_date: date | None = None
+    manual_product_name: str | None = None
+    manual_quantity_liters: float | None = None
+    manual_price_per_liter: float | None = None
+    manual_note: str | None = None
 
     supplier: PartnerResponse
-    purchase: SupplierDebtPurchaseInfo
+    purchase: SupplierDebtPurchaseInfo | None = None
 
     model_config = {"from_attributes": True}
 
@@ -120,3 +132,47 @@ class SupplierDebtResponse(BaseModel):
 class SupplierDebtListResponse(BaseModel):
     items: list[SupplierDebtResponse]
     total: int
+
+class ManualDebtCreate(BaseModel):
+    partner_id: int | None = None
+    partner_name: str | None = None
+    partner_phone: str | None = None
+    product_name: str | None = None
+    quantity_liters: float | None = None
+    price_per_liter: float | None = None
+    total_amount: float
+    date: date
+    note: str | None = None
+
+    @field_validator("total_amount")
+    @classmethod
+    def validate_amount(cls, v: float) -> float:
+        if v <= 0:
+            raise ValueError("Qarz summasi 0 dan katta bo'lishi kerak")
+        return v
+
+
+# ── Debt Detail (with payment history) ───────────────────────────────────────
+
+class DebtPaymentSimple(BaseModel):
+    id: int
+    date: date
+    amount: float
+    payment_type: str
+    note: str | None = None
+
+    model_config = {"from_attributes": True}
+
+
+class CustomerDebtDetail(CustomerDebtResponse):
+    """CustomerDebtResponse enriched with payment history."""
+    payments: list[DebtPaymentSimple] = []
+
+    model_config = {"from_attributes": True}
+
+
+class SupplierDebtDetail(SupplierDebtResponse):
+    """SupplierDebtResponse enriched with payment history."""
+    payments: list[DebtPaymentSimple] = []
+
+    model_config = {"from_attributes": True}

@@ -74,7 +74,7 @@ export default function Purchases() {
       const next = { ...prev, [field]: value };
 
       // Auto-calculate live preview
-      const qty = parseFloat(next.quantity_liters) || 0;
+      const qty = parseMoneyInput(next.quantity_liters) || 0;
 
       if (next.calc_mode === 'price') {
         const price = parseMoneyInput(next.purchase_price_per_liter) || 0;
@@ -108,7 +108,7 @@ export default function Purchases() {
         date: form.date,
         supplier_id: parseInt(form.supplier_id),
         product_id: parseInt(form.product_id),
-        quantity_liters: parseFloat(form.quantity_liters),
+        quantity_liters: parseMoneyInput(form.quantity_liters),
         note: form.note || null,
         payments: []
       };
@@ -314,11 +314,9 @@ export default function Purchases() {
             <div className="form-group">
               <label>Miqdor (Litr) *</label>
               <input
-                type="number"
-                min="0.01"
-                step="0.01"
+                type="text"
                 value={form.quantity_liters}
-                onChange={(e) => updateField('quantity_liters', e.target.value)}
+                onChange={(e) => updateField('quantity_liters', formatMoneyInput(e.target.value))}
                 placeholder="0.00"
                 required
               />

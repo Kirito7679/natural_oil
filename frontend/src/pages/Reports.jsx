@@ -2,6 +2,7 @@
  * Reports — hisobot sahifasi.
  */
 import { useState, useEffect } from 'react';
+import { Eye } from 'lucide-react';
 import client from '../api/client';
 import { downloadExcel } from '../utils/excelDownload';
 
@@ -26,6 +27,7 @@ export default function Reports() {
     const [dailyDate, setDailyDate] = useState(todayStr());
     const [dailyTx, setDailyTx] = useState(null);
     const [dailyLoading, setDailyLoading] = useState(false);
+    const [detailTx, setDetailTx] = useState(null);
 
     useEffect(() => {
         fetchReport();
@@ -470,14 +472,14 @@ export default function Reports() {
                                         <thead>
                                             <tr>
                                                 <th>Vaqt</th>
-                                                <th>Tur</th>
+                                                <th>Tavsif</th>
                                                 <th>Hamkor</th>
                                                 <th>Mahsulot</th>
                                                 <th className="text-right">Miqdor</th>
                                                 <th>To'lov turi</th>
                                                 <th className="text-right">Kirim</th>
                                                 <th className="text-right">Chiqim</th>
-                                                <th>Izoh</th>
+                                                <th style={{ textAlign: 'center', width: '40px' }}></th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -488,11 +490,13 @@ export default function Reports() {
                                             ) : (
                                                 dailyTx.transactions.map((t, idx) => (
                                                     <tr key={idx}>
-                                                        <td>{t.time}</td>
-                                                        <td>{t.title}</td>
+                                                        <td style={{ whiteSpace: 'nowrap' }}>{t.time}</td>
+                                                        <td style={{ maxWidth: '220px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={t.rich_note || t.title}>
+                                                            {t.rich_note || t.title}
+                                                        </td>
                                                         <td>{t.partner_name}</td>
                                                         <td>{t.product_name}</td>
-                                                        <td className="text-right">{t.quantity ? `${t.quantity} L` : '—'}</td>
+                                                        <td className="text-right">{t.quantity ? `${Number(t.quantity).toFixed(1)} L` : '—'}</td>
                                                         <td>{t.payment_type}</td>
                                                         <td className="text-right text-success font-medium">
                                                             {t.direction === 'income' ? `+${formatMoney(t.amount)}` : (t.direction === 'stock_only' && t.type === 'sale' ? formatMoney(t.amount) : '')}
@@ -500,7 +504,15 @@ export default function Reports() {
                                                         <td className="text-right text-danger font-medium">
                                                             {t.direction === 'outgoing' ? `-${formatMoney(t.amount)}` : (t.direction === 'stock_only' && (t.type === 'purchase' || t.type === 'initial_stock') ? formatMoney(t.amount) : '')}
                                                         </td>
-                                                        <td style={{ maxWidth: '150px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }} title={t.note}>{t.note}</td>
+                                                        <td style={{ textAlign: 'center' }}>
+                                                            <button
+                                                                className="row-action-btn"
+                                                                onClick={() => setDetailTx(t)}
+                                                                title="Batafsil"
+                                                            >
+                                                                <Eye size={15} strokeWidth={2.2} />
+                                                            </button>
+                                                        </td>
                                                     </tr>
                                                 ))
                                             )}
@@ -510,7 +522,71 @@ export default function Reports() {
                             </div>
                         )}
                     </div>
-                </>
+            </>
+            )}
+
+            {/* Transaction Detail Modal */}
+            {detailTx && (
+                <div className="modal-overlay" onClick={() => setDetailTx(null)}>
+                    <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '480px' }}>
+                        <div className="modal-header">
+                            <h2>Tranzaksiya tafsiloti</h2>
+                            <button className="modal-close" onClick={() => setDetailTx(null)}>✕</button>
+                        </div>
+                        <div className="modal-body" style={{ lineHeight: '1.9' }}>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border)', paddingBottom: '0.5rem', marginBottom: '0.5rem' }}>
+                                <span style={{ color: 'var(--text-secondary)' }}>Sana / Vaqt</span>
+                                <span>{detailTx.date || '—'} {detailTx.time}</span>
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border)', paddingBottom: '0.5rem', marginBottom: '0.5rem' }}>
+                                <span style={{ color: 'var(--text-secondary)' }}>Tur</span>
+                                <span>{detailTx.title}</span>
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border)', paddingBottom: '0.5rem', marginBottom: '0.5rem' }}>
+                                <span style={{ color: 'var(--text-secondary)' }}>Tavsif</span>
+                                <span style={{ textAlign: 'right', maxWidth: '280px' }}>{detailTx.rich_note || detailTx.title}</span>
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border)', paddingBottom: '0.5rem', marginBottom: '0.5rem' }}>
+                                <span style={{ color: 'var(--text-secondary)' }}>Hamkor</span>
+                                <span>{detailTx.partner_name}</span>
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border)', paddingBottom: '0.5rem', marginBottom: '0.5rem' }}>
+                                <span style={{ color: 'var(--text-secondary)' }}>Mahsulot</span>
+                                <span>{detailTx.product_name}</span>
+                            </div>
+                            {detailTx.quantity && (
+                                <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border)', paddingBottom: '0.5rem', marginBottom: '0.5rem' }}>
+                                    <span style={{ color: 'var(--text-secondary)' }}>Miqdor</span>
+                                    <span>{Number(detailTx.quantity).toFixed(1)} L</span>
+                                </div>
+                            )}
+                            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border)', paddingBottom: '0.5rem', marginBottom: '0.5rem' }}>
+                                <span style={{ color: 'var(--text-secondary)' }}>To'lov turi</span>
+                                <span>{detailTx.payment_type}</span>
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border)', paddingBottom: '0.5rem', marginBottom: '0.5rem' }}>
+                                <span style={{ color: 'var(--text-secondary)' }}>Yo'nalish</span>
+                                <span style={{ color: detailTx.direction === 'income' ? 'var(--success)' : detailTx.direction === 'outgoing' ? 'var(--danger)' : 'var(--text-secondary)' }}>
+                                    {detailTx.direction === 'income' ? 'Kirim' : detailTx.direction === 'outgoing' ? 'Chiqim' : 'Tovar harakati'}
+                                </span>
+                            </div>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', fontSize: '1.05rem' }}>
+                                <span style={{ color: 'var(--text-secondary)' }}>Summa</span>
+                                <span style={{ color: detailTx.direction === 'income' ? 'var(--success)' : 'var(--danger)' }}>
+                                    {formatMoney(detailTx.amount)}
+                                </span>
+                            </div>
+                            {detailTx.note && (
+                                <div style={{ marginTop: '0.75rem', padding: '0.5rem', background: 'var(--bg-input)', borderRadius: '6px', fontSize: '0.88rem', color: 'var(--text-secondary)' }}>
+                                    Izoh: {detailTx.note}
+                                </div>
+                            )}
+                        </div>
+                        <div className="modal-footer">
+                            <button className="btn btn-secondary" onClick={() => setDetailTx(null)}>Yopish</button>
+                        </div>
+                    </div>
+                </div>
             )}
         </div>
     );

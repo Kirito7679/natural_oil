@@ -82,6 +82,8 @@ def adjust(
         raise HTTPException(status_code=400, detail=str(e))
 
 
+from app.services.formatting_service import get_rich_description
+
 @router.get("/movements", response_model=MoneyMovementListResponse)
 def list_money_movements(
     skip: int = Query(0, ge=0),
@@ -93,7 +95,14 @@ def list_money_movements(
     query = db.query(MoneyMovement).order_by(MoneyMovement.id.desc())
     total = query.count()
     items = query.offset(skip).limit(limit).all()
+    
+    res_items = []
+    for m in items:
+        m_dict = {k: getattr(m, k) for k in m.__table__.columns.keys()}
+        m_dict["note"] = get_rich_description(db, m)
+        res_items.append(MoneyMovementResponse.model_validate(m_dict))
+
     return MoneyMovementListResponse(
-        items=[MoneyMovementResponse.model_validate(m) for m in items],
+        items=res_items,
         total=total,
     )

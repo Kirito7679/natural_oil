@@ -15,8 +15,8 @@ class CustomerDebt(Base):
     customer_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("partners.id"), nullable=False
     )
-    sale_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("sales.id"), nullable=False
+    sale_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("sales.id"), nullable=True
     )
     original_amount: Mapped[float] = mapped_column(Float, nullable=False)
     paid_amount: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
@@ -28,6 +28,12 @@ class CustomerDebt(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime, server_default=func.now(), nullable=False
     )
+    is_manual: Mapped[bool] = mapped_column(Integer, default=False)
+    manual_date: Mapped[datetime | None] = mapped_column(Date, nullable=True)
+    manual_product_name: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    manual_quantity_liters: Mapped[float | None] = mapped_column(Float, nullable=True)
+    manual_price_per_liter: Mapped[float | None] = mapped_column(Float, nullable=True)
+    manual_note: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     # Relationships
     customer = relationship("Partner", lazy="joined")
@@ -41,8 +47,8 @@ class SupplierDebt(Base):
     supplier_id: Mapped[int] = mapped_column(
         Integer, ForeignKey("partners.id"), nullable=False
     )
-    purchase_id: Mapped[int] = mapped_column(
-        Integer, ForeignKey("purchases.id"), nullable=False
+    purchase_id: Mapped[int | None] = mapped_column(
+        Integer, ForeignKey("purchases.id"), nullable=True
     )
     original_amount: Mapped[float] = mapped_column(Float, nullable=False)
     paid_amount: Mapped[float] = mapped_column(Float, nullable=False, default=0.0)
@@ -54,6 +60,12 @@ class SupplierDebt(Base):
     created_at: Mapped[datetime] = mapped_column(
         DateTime, server_default=func.now(), nullable=False
     )
+    is_manual: Mapped[bool] = mapped_column(Integer, default=False)
+    manual_date: Mapped[datetime | None] = mapped_column(Date, nullable=True)
+    manual_product_name: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    manual_quantity_liters: Mapped[float | None] = mapped_column(Float, nullable=True)
+    manual_price_per_liter: Mapped[float | None] = mapped_column(Float, nullable=True)
+    manual_note: Mapped[str | None] = mapped_column(Text, nullable=True)
 
     # Relationships
     supplier = relationship("Partner", lazy="joined")

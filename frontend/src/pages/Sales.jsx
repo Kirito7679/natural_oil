@@ -8,7 +8,7 @@ import { getSales, createSale, cancelSale } from '../api/sales';
 import { getProducts } from '../api/products';
 import { getPartners } from '../api/partners';
 import { getInventoryBatches } from '../api/inventory';
-import { formatDateTime, formatCurrency, formatNumber } from '../utils/formatters';
+import { formatDateTime, formatCurrency, formatNumber, formatMoneyInput, parseMoneyInput } from '../utils/formatters';
 import { downloadExcel } from '../utils/excelDownload';
 import Modal from '../components/Modal';
 
@@ -100,10 +100,10 @@ export default function Sales() {
     return inventoryBatches.find(b => b.id.toString() === form.inventory_batch_id.toString());
   }, [form.inventory_batch_id, inventoryBatches]);
 
-  const qty = parseFloat(form.quantity_liters) || 0;
-  const salePrice = parseFloat(form.sale_price_per_liter) || 0;
-  const purchasePrice = parseFloat(form.purchase_price_per_liter) || 0;
-  const paidAmount = parseFloat(form.paid_amount) || 0;
+  const qty = parseMoneyInput(form.quantity_liters);
+  const salePrice = parseMoneyInput(form.sale_price_per_liter);
+  const purchasePrice = parseMoneyInput(form.purchase_price_per_liter);
+  const paidAmount = parseMoneyInput(form.paid_amount);
 
   const totalSale = qty * salePrice;
   const totalCost = qty * purchasePrice;
@@ -354,18 +354,18 @@ export default function Sales() {
             <div className="form-group">
               <label>Miqdor, litrda *</label>
               <input
-                type="number" min="0.01" step="0.01"
+                type="text"
                 value={form.quantity_liters}
-                onChange={(e) => updateField('quantity_liters', e.target.value)}
+                onChange={(e) => updateField('quantity_liters', formatMoneyInput(e.target.value))}
                 placeholder="0.00" required
               />
             </div>
             <div className="form-group">
               <label>Sotish narxi *</label>
               <input
-                type="number" min="0.01" step="0.01"
+                type="text"
                 value={form.sale_price_per_liter}
-                onChange={(e) => updateField('sale_price_per_liter', e.target.value)}
+                onChange={(e) => updateField('sale_price_per_liter', formatMoneyInput(e.target.value))}
                 placeholder="0.00" required
               />
             </div>
@@ -399,9 +399,9 @@ export default function Sales() {
             <div className="form-group">
               <label>To'langan summa</label>
               <input
-                type="number" min="0" step="0.01"
+                type="text"
                 value={form.paid_amount}
-                onChange={(e) => updateField('paid_amount', e.target.value)}
+                onChange={(e) => updateField('paid_amount', formatMoneyInput(e.target.value))}
                 placeholder="0.00"
               />
               <div style={{ marginTop: '8px', fontSize: '13px', color: 'var(--text-secondary)' }}>
