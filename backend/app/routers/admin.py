@@ -9,6 +9,7 @@ from app.database import get_db
 from app.models.user import User
 from app.utils.auth import verify_password
 from app.utils.deps import get_current_user
+from app.utils.enums import FULL_ACCESS_ROLES
 
 router = APIRouter(prefix="/api/admin", tags=["Admin"])
 
@@ -51,8 +52,8 @@ def clear_data(
 ):
     """Tizimni to'liq tozalash. Faqat foydalanuvchilar (login) saqlanadi."""
 
-    # Faqat admin
-    if current_user.role != "admin":
+    # Faqat to'liq huquqli rollar (direktor yoki dev)
+    if current_user.role not in FULL_ACCESS_ROLES:
         raise HTTPException(status_code=403, detail="Фақат директор бажара олади")
 
     # Parolni tekshirish

@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 from app.database import get_db
 from app.models.user import User
 from app.utils.auth import decode_access_token
-from app.utils.enums import UserRole
+from app.utils.enums import UserRole, FULL_ACCESS_ROLES
 
 security = HTTPBearer()
 
@@ -53,8 +53,8 @@ def get_current_user(
 
 
 def require_admin(current_user: User = Depends(get_current_user)) -> User:
-    """Only admin can access this endpoint."""
-    if current_user.role != UserRole.ADMIN:
+    """To'liq huquqli rollar uchun: direktor (admin) va texnik ma'mur (dev)."""
+    if current_user.role not in FULL_ACCESS_ROLES:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Фақат директор учун рухсат берилган",

@@ -3,6 +3,7 @@
  */
 import { createContext, useContext, useState, useEffect } from 'react';
 import { login as loginApi, getMe } from '../api/auth';
+import { FULL_ACCESS_ROLES } from '../utils/roles';
 
 const AuthContext = createContext(null);
 
@@ -39,7 +40,7 @@ export function AuthProvider({ children }) {
     setUser(null);
   };
 
-  const isAdmin = user?.role === 'admin';
+  const isAdmin = FULL_ACCESS_ROLES.includes(user?.role);
   const isInvestor = user?.role === 'investor';
 
   return (

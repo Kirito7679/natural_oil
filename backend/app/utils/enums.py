@@ -54,5 +54,11 @@ class DebtType(str, enum.Enum):
 
 class UserRole(str, enum.Enum):
     ADMIN = "admin"
+    DEV = "dev"  # texnik ma'mur: direktor bilan bir xil to'liq huquq
     OPERATOR = "operator"
     INVESTOR = "investor"  # faqat ko'rish huquqi
+
+
+# To'liq huquqli rollar. Direktor — biznes egasi, dev — tizimga javob beradigan
+# texnik ma'mur. Huquqlari bir xil, faqat nomi boshqa.
+FULL_ACCESS_ROLES = (UserRole.ADMIN.value, UserRole.DEV.value)

@@ -4,7 +4,7 @@
 import { useState, useEffect } from 'react';
 import client from '../api/client';
 import { Lock, AlertTriangle } from 'lucide-react';
-import { ROLE_LABELS } from '../utils/roles';
+import { ROLE_LABELS, FULL_ACCESS_ROLES } from '../utils/roles';
 
 const formatDate = (d) => d ? new Date(d).toLocaleDateString('ru-RU') : '—';
 
@@ -157,7 +157,7 @@ export default function Users() {
         }
     }
 
-    const isAdmin = me?.role === 'admin';
+    const isAdmin = FULL_ACCESS_ROLES.includes(me?.role);
 
     return (
         <div className="page">
@@ -210,7 +210,7 @@ export default function Users() {
                                                 disabled={me && me.id === u.id}
                                                 onChange={(e) => changeRole(u, e.target.value)}
                                             >
-                                                {Object.entries(ROLE_LABELS).filter(([k]) => k !== 'operator' || u.role === 'operator').map(([k, l]) => (
+                                                {Object.entries(ROLE_LABELS).filter(([k]) => (k !== 'operator' || u.role === 'operator') && (k !== 'dev' || u.role === 'dev')).map(([k, l]) => (
                                                     <option key={k} value={k}>{l}</option>
                                                 ))}
                                             </select>
@@ -302,6 +302,7 @@ export default function Users() {
                                 <label>Рол</label>
                                 <select className="form-control" value={createForm.role} onChange={(e) => setCreateForm({ ...createForm, role: e.target.value })}>
                                     <option value="admin">Директор — тўлиқ ҳуқуқ</option>
+                                    <option value="dev">DEV — тўлиқ ҳуқуқ (тизимга жавоб берадиган техник маъмур)</option>
                                     <option value="investor">Инвестор — фақат кўриш (ҳисобот, омбор, қарзлар)</option>
                                 </select>
                             </div>
