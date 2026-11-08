@@ -5,11 +5,23 @@ from sqlalchemy.orm import Session
 from app.models.user import User
 from app.utils.auth import verify_password, create_access_token, hash_password
 from app.utils.enums import UserRole
+from app.utils.login import normalize_login
+
+
+def find_user_by_login(db: Session, login: str, exclude_id: int | None = None) -> User | None:
+    """Login bo'yicha foydalanuvchini topadi (bo'sh joy, +998 va harf katta-kichikligiga qaramaydi)."""
+    key = normalize_login(login)
+    if not key:
+        return None
+    for u in db.query(User).order_by(User.id).all():
+        if u.id != exclude_id and normalize_login(u.phone) == key:
+            return u
+    return None
 
 
 def authenticate_user(db: Session, phone: str, password: str) -> User | None:
-    """Verify phone + password and return user or None."""
-    user = db.query(User).filter(User.phone == phone).first()
+    """Verify login + password and return user or None."""
+    user = find_user_by_login(db, phone)
     if not user:
         return None
     if not user.is_active:

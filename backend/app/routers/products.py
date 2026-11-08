@@ -19,7 +19,7 @@ router = APIRouter(prefix="/api/products", tags=["Products"])
 
 @router.get("", response_model=ProductListResponse)
 def list_products(
-    active_only: bool = Query(False, description="Faqat faol mahsulotlarni ko'rsatish"),
+    active_only: bool = Query(False, description="Фақат фаол маҳсулотларни кўрсатиш"),
     db: Session = Depends(get_db),
     _current_user: User = Depends(get_current_user),
 ):
@@ -44,7 +44,7 @@ def get_product(
     """Bitta mahsulot ma'lumotlari."""
     product = db.query(Product).filter(Product.id == product_id).first()
     if not product:
-        raise HTTPException(status_code=404, detail="Mahsulot topilmadi")
+        raise HTTPException(status_code=404, detail="Маҳсулот топилмади")
     return ProductResponse.model_validate(product)
 
 
@@ -60,7 +60,7 @@ def create_product(
     if existing:
         raise HTTPException(
             status_code=400,
-            detail=f"'{data.name}' nomli mahsulot allaqachon mavjud",
+            detail=f"'{data.name}' номли маҳсулот аллақачон мавжуд",
         )
     product = Product(
         name=data.name,
@@ -83,7 +83,7 @@ def update_product(
     """Mahsulotni tahrirlash."""
     product = db.query(Product).filter(Product.id == product_id).first()
     if not product:
-        raise HTTPException(status_code=404, detail="Mahsulot topilmadi")
+        raise HTTPException(status_code=404, detail="Маҳсулот топилмади")
 
     if data.name is not None:
         # Check duplicate name (excluding self)
@@ -95,7 +95,7 @@ def update_product(
         if existing:
             raise HTTPException(
                 status_code=400,
-                detail=f"'{data.name}' nomli mahsulot allaqachon mavjud",
+                detail=f"'{data.name}' номли маҳсулот аллақачон мавжуд",
             )
         product.name = data.name
 
@@ -120,7 +120,7 @@ def toggle_product_active(
     """Mahsulotni faollashtirish yoki o'chirish."""
     product = db.query(Product).filter(Product.id == product_id).first()
     if not product:
-        raise HTTPException(status_code=404, detail="Mahsulot topilmadi")
+        raise HTTPException(status_code=404, detail="Маҳсулот топилмади")
     product.is_active = not product.is_active
     db.commit()
     db.refresh(product)

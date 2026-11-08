@@ -12,6 +12,18 @@ Covers:
 """
 
 
+import pytest
+
+
+@pytest.fixture(autouse=True)
+def _products(db_session):
+    """Mahsulotlar endi avtomatik yaratilmaydi — testlar uchun o'zimiz qo'shamiz."""
+    from app.models.product import Product
+    for name in ["AI-80", "AI-91", "AI-92", "AI-95", "Дизел", "Бошқа"]:
+        db_session.add(Product(name=name, unit="liter"))
+    db_session.commit()
+
+
 class TestListProducts:
     """Test product listing."""
 
@@ -25,7 +37,7 @@ class TestListProducts:
         assert "AI-91" in names
         assert "AI-92" in names
         assert "AI-95" in names
-        assert "Dizel" in names
+        assert "Дизел" in names
 
     def test_list_active_only(self, client, admin_headers, db_session):
         from app.models.product import Product
@@ -65,7 +77,7 @@ class TestCreateProduct:
             "name": "AI-92",
         }, headers=admin_headers)
         assert resp.status_code == 400
-        assert "allaqachon mavjud" in resp.json()["detail"]
+        assert "аллақачон мавжуд" in resp.json()["detail"]
 
     def test_empty_name_rejected(self, client, admin_headers):
         resp = client.post("/api/products", json={
@@ -79,7 +91,7 @@ class TestUpdateProduct:
 
     def test_update_product_name(self, client, admin_headers, db_session):
         from app.models.product import Product
-        p = db_session.query(Product).filter(Product.name == "Boshqa").first()
+        p = db_session.query(Product).filter(Product.name == "Бошқа").first()
 
         resp = client.put(f"/api/products/{p.id}", json={
             "name": "Boshqa yoqilg'i",

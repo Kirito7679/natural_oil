@@ -14,7 +14,7 @@ class ProductCreate(BaseModel):
     def name_not_empty(cls, v: str) -> str:
         v = v.strip()
         if not v:
-            raise ValueError("Mahsulot nomi bo'sh bo'lmasligi kerak")
+            raise ValueError("Маҳсулот номи бўш бўлмаслиги керак")
         return v
 
 
@@ -30,7 +30,7 @@ class ProductUpdate(BaseModel):
         if v is not None:
             v = v.strip()
             if not v:
-                raise ValueError("Mahsulot nomi bo'sh bo'lmasligi kerak")
+                raise ValueError("Маҳсулот номи бўш бўлмаслиги керак")
         return v
 
 

@@ -39,7 +39,7 @@ def get_sale(
     """Bitta sotuv haqida ma'lumot."""
     sale = db.query(Sale).filter(Sale.id == sale_id).first()
     if not sale:
-        raise HTTPException(status_code=404, detail="Sotuv topilmadi")
+        raise HTTPException(status_code=404, detail="Сотув топилмади")
     return SaleResponse.model_validate(sale)
 
 

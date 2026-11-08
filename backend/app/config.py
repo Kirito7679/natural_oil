@@ -12,9 +12,11 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 480
 
     # Admin seed
-    ADMIN_NAME: str = "Admin"
-    ADMIN_PHONE: str = "+998901234567"
-    ADMIN_PASSWORD: str = "admin123"
+    # Asosiy foydalanuvchi (birinchi ishga tushishda yaratiladi; parolni keyin tizimda o'zi o'zgartiradi).
+    # Eski ADMIN_* kalitlari endi ishlatilmaydi.
+    MAIN_USER_NAME: str = "Хумоюн"
+    MAIN_USER_LOGIN: str = "95 810 06 00"
+    MAIN_USER_PASSWORD: str = "1234567"
 
     # CORS — production domain; override in local .env for dev
     FRONTEND_URL: str = "https://naturaloilerp.uz"

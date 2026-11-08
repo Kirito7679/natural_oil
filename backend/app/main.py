@@ -18,6 +18,7 @@ from app.routers import (
     excel_export,
     users,
     admin,
+    report_tabs,
 )
 from app.seed import seed_database
 
@@ -72,6 +73,7 @@ app.include_router(reports.router)
 app.include_router(excel_export.router)
 app.include_router(users.router)
 app.include_router(admin.router)
+app.include_router(report_tabs.router)
 
 
 @app.get("/")

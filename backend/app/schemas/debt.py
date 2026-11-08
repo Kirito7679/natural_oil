@@ -21,7 +21,7 @@ class DebtPaymentCreate(BaseModel):
     @classmethod
     def validate_amount(cls, v: float) -> float:
         if v <= 0:
-            raise ValueError("To'lov summasi 0 dan katta bo'lishi kerak")
+            raise ValueError("Тўлов суммаси 0 дан катта бўлиши керак")
         return v
 
 
@@ -148,7 +148,7 @@ class ManualDebtCreate(BaseModel):
     @classmethod
     def validate_amount(cls, v: float) -> float:
         if v <= 0:
-            raise ValueError("Qarz summasi 0 dan katta bo'lishi kerak")
+            raise ValueError("Қарз суммаси 0 дан катта бўлиши керак")
         return v
 
 

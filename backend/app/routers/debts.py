@@ -49,7 +49,7 @@ def get_customer_debt(
 ):
     debt = db.query(CustomerDebt).filter(CustomerDebt.id == debt_id).first()
     if not debt:
-        raise HTTPException(status_code=404, detail="Qarz topilmadi")
+        raise HTTPException(status_code=404, detail="Қарз топилмади")
     return CustomerDebtResponse.model_validate(debt)
 
 
@@ -62,7 +62,7 @@ def get_customer_debt_detail(
     """Mijoz qarzi tafsilotlari — to'lovlar tarixi bilan."""
     debt = db.query(CustomerDebt).filter(CustomerDebt.id == debt_id).first()
     if not debt:
-        raise HTTPException(status_code=404, detail="Qarz topilmadi")
+        raise HTTPException(status_code=404, detail="Қарз топилмади")
     payments = db.query(DebtPayment).filter(
         DebtPayment.debt_type == "customer_debt",
         DebtPayment.debt_id == debt_id,
@@ -107,10 +107,10 @@ def api_create_manual_customer_debt(
             Partner.type.in_(["customer", "both"])
         ).first()
         if not partner:
-            raise HTTPException(status_code=404, detail="Mijoz topilmadi")
+            raise HTTPException(status_code=404, detail="Мижоз топилмади")
     else:
         if not data.partner_name:
-            raise HTTPException(status_code=400, detail="Mijoz nomi yoki IDsini kiritish majburiy")
+            raise HTTPException(status_code=400, detail="Мижоз номи ёки ID'сини киритиш мажбурий")
         partner = Partner(
             name=data.partner_name,
             phone=data.partner_phone,
@@ -169,7 +169,7 @@ def get_supplier_debt(
 ):
     debt = db.query(SupplierDebt).filter(SupplierDebt.id == debt_id).first()
     if not debt:
-        raise HTTPException(status_code=404, detail="Qarz topilmadi")
+        raise HTTPException(status_code=404, detail="Қарз топилмади")
     return SupplierDebtResponse.model_validate(debt)
 
 
@@ -182,7 +182,7 @@ def get_supplier_debt_detail(
     """Yetkazib beruvchi qarzi tafsilotlari — to'lovlar tarixi bilan."""
     debt = db.query(SupplierDebt).filter(SupplierDebt.id == debt_id).first()
     if not debt:
-        raise HTTPException(status_code=404, detail="Qarz topilmadi")
+        raise HTTPException(status_code=404, detail="Қарз топилмади")
     payments = db.query(DebtPayment).filter(
         DebtPayment.debt_type == "supplier_debt",
         DebtPayment.debt_id == debt_id,
@@ -227,10 +227,10 @@ def api_create_manual_supplier_debt(
             Partner.type.in_(["supplier", "both"])
         ).first()
         if not partner:
-            raise HTTPException(status_code=404, detail="Yetkazib beruvchi topilmadi")
+            raise HTTPException(status_code=404, detail="Етказиб берувчи топилмади")
     else:
         if not data.partner_name:
-            raise HTTPException(status_code=400, detail="Yetkazib beruvchi nomi yoki IDsini kiritish majburiy")
+            raise HTTPException(status_code=400, detail="Етказиб берувчи номи ёки ID'сини киритиш мажбурий")
         partner = Partner(
             name=data.partner_name,
             phone=data.partner_phone,

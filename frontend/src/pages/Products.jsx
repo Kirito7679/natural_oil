@@ -57,7 +57,7 @@ export default function Products() {
       fetchProducts();
     } catch (err) {
       setError(
-        err.response?.data?.detail || "Xatolik yuz berdi"
+        err.response?.data?.detail || "Хатолик юз берди"
       );
     } finally {
       setSaving(false);
@@ -84,9 +84,9 @@ export default function Products() {
   return (
     <div className="page">
       <div className="page-header">
-        <h1 className="page-title">Mahsulotlar</h1>
-        <button className="btn btn--primary" onClick={openCreateModal}>
-          + Yangi mahsulot
+        <h1 className="page-title">Маҳсулотлар</h1>
+        <button className="write-action btn btn--primary" onClick={openCreateModal}>
+          + Янги маҳсулот
         </button>
       </div>
 
@@ -96,19 +96,19 @@ export default function Products() {
             <thead>
               <tr>
                 <th>#</th>
-                <th>Nomi</th>
-                <th>Birlik</th>
-                <th>Holat</th>
-                <th>Izoh</th>
-                <th>Yaratilgan</th>
-                <th>Amallar</th>
+                <th>Номи</th>
+                <th>Бирлик</th>
+                <th>Ҳолат</th>
+                <th>Изоҳ</th>
+                <th>Яратилган</th>
+                <th>Амаллар</th>
               </tr>
             </thead>
             <tbody>
               {products.length === 0 ? (
                 <tr>
                   <td colSpan={7}>
-                    <p className="empty-message">Mahsulotlar yo'q</p>
+                    <p className="empty-message">Маҳсулотлар йўқ</p>
                   </td>
                 </tr>
               ) : (
@@ -116,10 +116,10 @@ export default function Products() {
                   <tr key={p.id} className={!p.is_active ? 'row-inactive' : ''}>
                     <td>{idx + 1}</td>
                     <td className="font-medium">{p.name}</td>
-                    <td>{p.unit === 'liter' ? 'Litr' : p.unit}</td>
+                    <td>{p.unit === 'liter' ? 'Литр' : p.unit}</td>
                     <td>
                       <span className={`badge badge--${p.is_active ? 'active' : 'cancelled'}`}>
-                        {p.is_active ? 'Faol' : 'Nofaol'}
+                        {p.is_active ? 'Фаол' : 'Нофаол'}
                       </span>
                     </td>
                     <td>{p.note || '—'}</td>
@@ -127,16 +127,16 @@ export default function Products() {
                     <td>
                       <div className="action-buttons">
                         <button
-                          className="btn btn--outline btn--sm"
+                          className="write-action btn btn--outline btn--sm"
                           onClick={() => openEditModal(p)}
                         >
-                          Tahrirlash
+                          Таҳрирлаш
                         </button>
                         <button
-                          className={`btn btn--sm ${p.is_active ? 'btn--danger-outline' : 'btn--success-outline'}`}
+                          className={"write-action " + `btn btn--sm ${p.is_active ? 'btn--danger-outline' : 'btn--success-outline'}`}
                           onClick={() => handleToggle(p)}
                         >
-                          {p.is_active ? "O'chirish" : 'Faollashtirish'}
+                          {p.is_active ? "Ўчириш" : 'Фаоллаштириш'}
                         </button>
                       </div>
                     </td>
@@ -152,28 +152,28 @@ export default function Products() {
       <Modal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
-        title={editingProduct ? "Mahsulotni tahrirlash" : "Yangi mahsulot"}
+        title={editingProduct ? "Маҳсулотни таҳрирлаш" : "Янги маҳсулот"}
       >
         <form onSubmit={handleSubmit}>
           {error && <div className="alert alert--error">{error}</div>}
           <div className="form-group">
-            <label htmlFor="product-name">Nomi *</label>
+            <label htmlFor="product-name">Номи *</label>
             <input
               id="product-name"
               type="text"
               value={form.name}
               onChange={(e) => setForm({ ...form, name: e.target.value })}
-              placeholder="Masalan: AI-95"
+              placeholder="Масалан: AI-95"
               required
             />
           </div>
           <div className="form-group">
-            <label htmlFor="product-note">Izoh</label>
+            <label htmlFor="product-note">Изоҳ</label>
             <textarea
               id="product-note"
               value={form.note}
               onChange={(e) => setForm({ ...form, note: e.target.value })}
-              placeholder="Qo'shimcha ma'lumot..."
+              placeholder="Қўшимча маълумот..."
               rows={3}
             />
           </div>
@@ -183,14 +183,14 @@ export default function Products() {
               className="btn btn--outline"
               onClick={() => setModalOpen(false)}
             >
-              Bekor qilish
+              Бекор қилиш
             </button>
             <button
               type="submit"
               className="btn btn--primary"
               disabled={saving}
             >
-              {saving ? 'Saqlanmoqda...' : 'Saqlash'}
+              {saving ? 'Сақланмоқда...' : 'Сақлаш'}
             </button>
           </div>
         </form>

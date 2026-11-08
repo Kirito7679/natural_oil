@@ -19,7 +19,7 @@ class InitialFuelStockRequest(BaseModel):
     @classmethod
     def validate_positive(cls, v: float) -> float:
         if v <= 0:
-            raise ValueError("Miqdor va narx 0 dan katta bo'lishi kerak")
+            raise ValueError("Миқдор ва нарх 0 дан катта бўлиши керак")
         return v
 
 
@@ -31,7 +31,7 @@ class PurchasePaymentCreate(BaseModel):
     @classmethod
     def validate_amount(cls, v: float) -> float:
         if v <= 0:
-            raise ValueError("To'lov summasi 0 dan katta bo'lishi kerak")
+            raise ValueError("Тўлов суммаси 0 дан катта бўлиши керак")
         return v
 
 
@@ -51,32 +51,32 @@ class PurchaseCreate(BaseModel):
     @model_validator(mode="after")
     def validate_calculation_inputs(self) -> "PurchaseCreate":
         if self.quantity_liters <= 0:
-            raise ValueError("Miqdor 0 dan katta bo'lishi kerak")
+            raise ValueError("Миқдор 0 дан катта бўлиши керак")
             
         if self.purchase_price_per_liter is None and self.total_amount is None:
-            raise ValueError("Narx yoki umumiy summa kiritilishi shart")
+            raise ValueError("Нарх ёки умумий сумма киритилиши шарт")
             
         # Calculate missing fields
         if self.purchase_price_per_liter is not None and self.total_amount is None:
             if self.purchase_price_per_liter <= 0:
-                raise ValueError("Narx 0 dan katta bo'lishi kerak")
+                raise ValueError("Нарх 0 дан катта бўлиши керак")
             self.total_amount = self.quantity_liters * self.purchase_price_per_liter
             
         elif self.total_amount is not None and self.purchase_price_per_liter is None:
             if self.total_amount <= 0:
-                raise ValueError("Umumiy summa 0 dan katta bo'lishi kerak")
+                raise ValueError("Умумий сумма 0 дан катта бўлиши керак")
             self.purchase_price_per_liter = self.total_amount / self.quantity_liters
             
         elif self.purchase_price_per_liter is not None and self.total_amount is not None:
             # Both provided, validate they match (allowing small float rounding differences)
             expected_total = self.quantity_liters * self.purchase_price_per_liter
             if abs(expected_total - self.total_amount) > 0.01:
-                raise ValueError("Kiritilgan narx va miqdor bo'yicha summa to'g'ri kelmayapti")
+                raise ValueError("Киритилган нарх ва миқдор бўйича сумма тўғри келмаяпти")
                 
         # Validate payments don't exceed total
         total_paid = sum(p.amount for p in self.payments)
         if total_paid > self.total_amount + 0.01:  # small epsilon for floats
-            raise ValueError("To'lov summasi umumiy summadan oshmasligi kerak")
+            raise ValueError("Тўлов суммаси умумий суммадан ошмаслиги керак")
             
         return self
 

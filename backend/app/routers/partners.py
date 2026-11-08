@@ -26,8 +26,8 @@ router = APIRouter(prefix="/api/partners", tags=["Partners"])
 @router.get("", response_model=PartnerListResponse)
 def list_partners(
     partner_type: str | None = Query(None, description="Turi: customer, supplier, both"),
-    active_only: bool = Query(False, description="Faqat faol hamkorlar"),
-    search: str | None = Query(None, description="Nomi yoki kompaniya nomi bo'yicha qidirish"),
+    active_only: bool = Query(False, description="Фақат фаол ҳамкорлар"),
+    search: str | None = Query(None, description="Номи ёки компания номи бўйича қидириш"),
     db: Session = Depends(get_db),
     _current_user: User = Depends(get_current_user),
 ):
@@ -74,7 +74,7 @@ def get_partner(
     """Bitta hamkor ma'lumotlari."""
     partner = db.query(Partner).filter(Partner.id == partner_id).first()
     if not partner:
-        raise HTTPException(status_code=404, detail="Hamkor topilmadi")
+        raise HTTPException(status_code=404, detail="Ҳамкор топилмади")
     return PartnerResponse.model_validate(partner)
 
 
@@ -90,7 +90,7 @@ def get_partner_stats(
 
     partner = db.query(Partner).filter(Partner.id == partner_id).first()
     if not partner:
-        raise HTTPException(status_code=404, detail="Hamkor topilmadi")
+        raise HTTPException(status_code=404, detail="Ҳамкор топилмади")
 
     # === Sales (mijoz bo'lsa — bizdan sotib olgan)
     sales = db.query(Sale).filter(
@@ -131,7 +131,7 @@ def get_partner_stats(
     for s in sales:
         transactions.append({
             "type": "sale",
-            "type_label": "Sotuv",
+            "type_label": "Сотув",
             "id": s.id,
             "date": str(s.date),
             "product": s.product.name if s.product else "",
@@ -145,7 +145,7 @@ def get_partner_stats(
     for p in purchases:
         transactions.append({
             "type": "purchase",
-            "type_label": "Prixod",
+            "type_label": "Приход",
             "id": p.id,
             "date": str(p.date),
             "product": p.product.name if p.product else "",
@@ -165,7 +165,7 @@ def get_partner_stats(
     for dp in debt_payments:
         transactions.append({
             "type": "debt_payment",
-            "type_label": "Mijoz qarz to'lovi" if dp.debt_type == "customer_debt" else "Yetkazuvchi qarz to'lovi",
+            "type_label": "Мижоз қарз тўлови" if dp.debt_type == "customer_debt" else "Етказувчи қарз тўлови",
             "id": dp.id,
             "date": str(dp.date),
             "product": "—",
@@ -240,7 +240,7 @@ def update_partner(
     """Hamkorni tahrirlash."""
     partner = db.query(Partner).filter(Partner.id == partner_id).first()
     if not partner:
-        raise HTTPException(status_code=404, detail="Hamkor topilmadi")
+        raise HTTPException(status_code=404, detail="Ҳамкор топилмади")
 
     if data.name is not None:
         partner.name = data.name
@@ -271,7 +271,7 @@ def toggle_partner_active(
     """Hamkorni faollashtirish yoki o'chirish."""
     partner = db.query(Partner).filter(Partner.id == partner_id).first()
     if not partner:
-        raise HTTPException(status_code=404, detail="Hamkor topilmadi")
+        raise HTTPException(status_code=404, detail="Ҳамкор топилмади")
     partner.is_active = not partner.is_active
     db.commit()
     db.refresh(partner)

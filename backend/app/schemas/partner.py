@@ -19,14 +19,14 @@ class PartnerCreate(BaseModel):
     def name_not_empty(cls, v: str) -> str:
         v = v.strip()
         if not v:
-            raise ValueError("Hamkor nomi bo'sh bo'lmasligi kerak")
+            raise ValueError("Ҳамкор номи бўш бўлмаслиги керак")
         return v
 
     @field_validator("type")
     @classmethod
     def validate_type(cls, v: PartnerType) -> PartnerType:
         if v not in (PartnerType.CUSTOMER, PartnerType.SUPPLIER, PartnerType.BOTH):
-            raise ValueError("Hamkor turi noto'g'ri")
+            raise ValueError("Ҳамкор тури нотўғри")
         return v
 
 
@@ -45,7 +45,7 @@ class PartnerUpdate(BaseModel):
         if v is not None:
             v = v.strip()
             if not v:
-                raise ValueError("Hamkor nomi bo'sh bo'lmasligi kerak")
+                raise ValueError("Ҳамкор номи бўш бўлмаслиги керак")
         return v
 
 

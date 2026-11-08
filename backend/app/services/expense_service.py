@@ -24,7 +24,7 @@ def create_expense(
         ExpenseCategory.is_active == True,
     ).first()
     if not category:
-        raise ValueError("Kategoriya topilmadi yoki faol emas.")
+        raise ValueError("Категория топилмади ёки фаол эмас.")
 
     # Create expense record
     expense = Expense(
@@ -48,9 +48,10 @@ def create_expense(
         movement_type=MovementType.EXPENSE,
         related_table="expenses",
         related_id=expense.id,
-        note=f"Xarajat: {category.name}" + (f". {data.note}" if data.note else ""),
+        note=f"Харажат: {category.name}" + (f". {data.note}" if data.note else ""),
         user_id=user_id,
         auto_commit=False,
+            on_date=data.date,
     )
 
     db.commit()
@@ -65,9 +66,9 @@ def cancel_expense(
 
     expense = db.query(Expense).filter(Expense.id == expense_id).first()
     if not expense:
-        raise ValueError("Xarajat topilmadi.")
+        raise ValueError("Харажат топилмади.")
     if expense.status == "cancelled":
-        raise ValueError("Bu xarajat allaqachon bekor qilingan.")
+        raise ValueError("Бу харажат аллақачон бекор қилинган.")
 
     # Mark as cancelled
     expense.status = "cancelled"
@@ -84,7 +85,7 @@ def cancel_expense(
         movement_type=MovementType.EXPENSE,
         related_table="expenses",
         related_id=expense.id,
-        note=f"Xarajat bekor qilindi. ID: {expense.id}",
+        note=f"Харажат бекор қилинди. ID: {expense.id}",
         user_id=user_id,
         auto_commit=False,
     )

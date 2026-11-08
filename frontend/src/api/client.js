@@ -21,6 +21,15 @@ client.interceptors.request.use((config) => {
 client.interceptors.response.use(
   (response) => response,
   (error) => {
+    // Xato xabarini doim o'qiladigan matnga keltiramiz
+    const res = error.response;
+    if (!res) {
+      error.response = { data: { detail: 'Сервер билан алоқа йўқ. Backend ишлаётганини текширинг.' } };
+    } else if (res.data && Array.isArray(res.data.detail)) {
+      res.data.detail = res.data.detail.map((d) => (d.msg || '').replace(/^Value error, /, '')).join('; ');
+    } else if (res.status >= 500) {
+      res.data = { ...(typeof res.data === 'object' ? res.data : {}), detail: `Серверда хатолик (${res.status}). Backend ойнасидаги хабарни текширинг.` };
+    }
     if (error.response?.status === 401) {
       localStorage.removeItem('token');
       localStorage.removeItem('user');

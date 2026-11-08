@@ -6,7 +6,7 @@ import { Eye } from 'lucide-react';
 import client from '../api/client';
 import { downloadExcel } from '../utils/excelDownload';
 import { parseMoneyInput, formatMoneyInput } from '../utils/formatters';
-const formatMoney = (n) => new Intl.NumberFormat('uz-UZ').format(Math.round(n)) + ' so\'m';
+const formatMoney = (n) => new Intl.NumberFormat('uz-UZ').format(Math.round(n)) + ' сўм';
 const formatDate = (d) => (d ? new Date(d).toLocaleDateString('ru-RU') : '—');
 
 export default function SupplierDebts() {
@@ -91,7 +91,7 @@ export default function SupplierDebts() {
             setPayModal(null);
             fetchDebts();
         } catch (e) {
-            setPayError(e.response?.data?.detail || 'Xato yuz berdi');
+            setPayError(e.response?.data?.detail || 'Хато юз берди');
         } finally {
             setPayLoading(false);
         }
@@ -104,13 +104,13 @@ export default function SupplierDebts() {
         // Frontend validation
         const partnerId = manualForm.partner_id ? parseInt(manualForm.partner_id) : null;
         if (!partnerId && !manualForm.partner_name?.trim()) {
-            setManualError('Yetkazib beruvchi tanlanmagan yoki nomi kiritilmagan');
+            setManualError('Етказиб берувчи танланмаган ёки номи киритилмаган');
             setManualLoading(false);
             return;
         }
         const totalAmount = parseMoneyInput(manualForm.total_amount);
         if (!totalAmount || totalAmount <= 0) {
-            setManualError('Jami qarz summasi 0 dan katta bo\'lishi kerak');
+            setManualError('Жами қарз суммаси 0 дан катта бўлиши керак');
             setManualLoading(false);
             return;
         }
@@ -138,7 +138,7 @@ export default function SupplierDebts() {
             fetchDebts();
             fetchPartners();
         } catch (e) {
-            setManualError(e.response?.data?.detail || 'Saqlashda xatolik yuz berdi');
+            setManualError(e.response?.data?.detail || 'Сақлашда хатолик юз берди');
         } finally {
             setManualLoading(false);
         }
@@ -158,9 +158,9 @@ export default function SupplierDebts() {
 
     return (
         <div className="page">
-            <div className="page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <h1 className="page-title">Bizning qarzlar (yetkazib beruvchilar)</h1>
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <div className="page-header">
+                <h1 className="page-title">Бизнинг қарзлар (етказиб берувчилар)</h1>
+                <div className="action-buttons">
                     <button
                         className="btn btn-secondary"
                         onClick={() => downloadExcel(
@@ -172,53 +172,53 @@ export default function SupplierDebts() {
                         ⬇ Excel
                     </button>
                     <button
-                        className="btn btn-primary"
+                        className="write-action btn btn-primary"
                         onClick={() => {
                             setManualModal(true);
                             setManualError('');
                         }}
                     >
-                        + O'zida bor qarzni qo'shish
+                        + Ўзида бор қарзни қўшиш
                     </button>
                 </div>
             </div>
 
-            <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem' }}>
-                <div className="card" style={{ flex: 1, padding: '1rem' }}>
-                    <div style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Jami qarzlar</div>
-                    <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--accent)' }}>{total} ta</div>
+            <div className="kpi-grid">
+                <div className="kpi">
+                    <div className="kpi-label">Жами қарзлар</div>
+                    <div className="kpi-value">{total} та</div>
                 </div>
-                <div className="card" style={{ flex: 2, padding: '1rem' }}>
-                    <div style={{ color: 'var(--text-secondary)', fontSize: '0.85rem' }}>Jami qolgan qarz</div>
-                    <div style={{ fontSize: '1.5rem', fontWeight: 700, color: 'var(--danger)' }}>{formatMoney(totalRemaining)}</div>
+                <div className="kpi kpi--hero">
+                    <div className="kpi-label">Жами қолган қарз</div>
+                    <div className="kpi-value">{formatMoney(totalRemaining)}</div>
                 </div>
             </div>
 
             <div className="card" style={{ marginBottom: '1rem', padding: '1rem', display: 'flex', gap: '0.5rem' }}>
                 {['active', 'closed', 'all'].map((s) => (
                     <button key={s} onClick={() => setStatusFilter(s)} className={`btn ${statusFilter === s ? 'btn-primary' : 'btn-secondary'}`} style={{ fontSize: '0.85rem' }}>
-                        {s === 'active' ? 'Faol' : s === 'closed' ? 'Yopilgan' : 'Barchasi'}
+                        {s === 'active' ? 'Фаол' : s === 'closed' ? 'Ёпилган' : 'Барчаси'}
                     </button>
                 ))}
             </div>
 
             <div className="card">
                 {loading ? (
-                    <p className="empty-message">Yuklanmoqda...</p>
+                    <p className="empty-message">Юкланмоқда...</p>
                 ) : debts.length === 0 ? (
-                    <p className="empty-message">Qarzlar yo'q</p>
+                    <p className="empty-message">Қарзлар йўқ</p>
                 ) : (
                     <table className="data-table">
                         <thead>
                             <tr>
-                                <th>Yetkazib beruvchi</th>
-                                <th>Xarid # / Qarz turi</th>
-                                <th>Dastlabki</th>
-                                <th>To'langan</th>
-                                <th>Qolgan</th>
-                                <th>Holat</th>
-                                <th>Oxirgi to'lov</th>
-                                <th>Amal</th>
+                                <th>Етказиб берувчи</th>
+                                <th>Харид # / Қарз тури</th>
+                                <th>Дастлабки</th>
+                                <th>Тўланган</th>
+                                <th>Қолган</th>
+                                <th>Ҳолат</th>
+                                <th>Охирги тўлов</th>
+                                <th>Амал</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -228,7 +228,7 @@ export default function SupplierDebts() {
                                     <td>
                                         {d.is_manual ? (
                                             <span style={{ fontSize: '0.8rem', padding: '2px 6px', background: '#e0e7ff', color: '#3730a3', borderRadius: 4 }}>
-                                                Eski qarz
+                                                Эски қарз
                                             </span>
                                         ) : (
                                             `#${d.purchase_id}`
@@ -239,18 +239,18 @@ export default function SupplierDebts() {
                                     <td style={{ color: 'var(--danger)', fontWeight: 600 }}>{formatMoney(d.remaining_amount)}</td>
                                     <td>
                                         <span style={{ padding: '2px 8px', borderRadius: 4, fontSize: '0.8rem', background: d.status === 'active' ? 'var(--danger)' : 'var(--success)', color: '#fff' }}>
-                                            {d.status === 'active' ? 'Faol' : 'Yopilgan'}
+                                            {d.status === 'active' ? 'Фаол' : 'Ёпилган'}
                                         </span>
                                     </td>
                                     <td>{formatDate(d.last_payment_date)}</td>
                                     <td style={{ display: 'flex', gap: '0.35rem', alignItems: 'center' }}>
                                         {d.status === 'active' && (
-                                            <button className="btn btn-primary" style={{ fontSize: '0.8rem', padding: '4px 10px' }} onClick={() => openPay(d)}>To'lash</button>
+                                            <button className="write-action btn btn-primary" style={{ fontSize: '0.8rem', padding: '4px 10px' }} onClick={() => openPay(d)}>Тўлаш</button>
                                         )}
                                         <button
                                             className="row-action-btn"
                                             onClick={() => openDetail(d)}
-                                            title="Tafsilot"
+                                            title="Тафсилот"
                                         >
                                             <Eye size={15} strokeWidth={2.2} />
                                         </button>
@@ -267,24 +267,24 @@ export default function SupplierDebts() {
                 <div className="modal-overlay" onClick={() => setManualModal(false)}>
                     <div className="modal" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
-                            <h2>O'zida bor qarzni qo'shish (Yetkazib beruvchi)</h2>
+                            <h2>Ўзида бор қарзни қўшиш (Етказиб берувчи)</h2>
                             <button className="modal-close" onClick={() => setManualModal(false)}>✕</button>
                         </div>
                         <div className="modal-body">
                             <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '1rem' }}>
-                                Bu qarz faqat eski qarzni ro'yxatga olish uchun. Ombor, xarid, xarajat yoki balansga ta'sir qilmaydi.
+                                Бу қарз фақат эски қарзни рўйхатга олиш учун. Омбор, харид, харажат ёки балансга таъсир қилмайди.
                             </p>
                             
                             <div className="form-group">
-                                <label>Yetkazib beruvchini tanlash (yoki yangi kiriting)</label>
+                                <label>Етказиб берувчини танлаш (ёки янги киритинг)</label>
                                 <select 
                                     className="form-control" 
                                     value={manualForm.partner_id} 
                                     onChange={(e) => setManualForm({ ...manualForm, partner_id: e.target.value })}
                                 >
-                                    <option value="">-- Yangi yetkazib beruvchi kiritish --</option>
+                                    <option value="">-- Янги етказиб берувчи киритиш --</option>
                                     {partners.map(p => (
-                                        <option key={p.id} value={p.id}>{p.name} ({p.phone || 'Tel raqamsiz'})</option>
+                                        <option key={p.id} value={p.id}>{p.name} ({p.phone || 'Тел рақамсиз'})</option>
                                     ))}
                                 </select>
                             </div>
@@ -292,53 +292,53 @@ export default function SupplierDebts() {
                             {!manualForm.partner_id && (
                                 <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
                                     <div style={{ flex: 1 }}>
-                                        <label>Yetkazib beruvchi nomi</label>
+                                        <label>Етказиб берувчи номи</label>
                                         <input type="text" className="form-control" value={manualForm.partner_name} onChange={(e) => setManualForm({...manualForm, partner_name: e.target.value})} />
                                     </div>
                                     <div style={{ flex: 1 }}>
-                                        <label>Telefon</label>
+                                        <label>Телефон</label>
                                         <input type="text" className="form-control" value={manualForm.partner_phone} onChange={(e) => setManualForm({...manualForm, partner_phone: e.target.value})} />
                                     </div>
                                 </div>
                             )}
 
                             <div className="form-group">
-                                <label>Yoqilg'i nomi (ixtiyoriy)</label>
+                                <label>Ёқилғи номи (ихтиёрий)</label>
                                 <input type="text" className="form-control" value={manualForm.product_name} onChange={(e) => setManualForm({...manualForm, product_name: e.target.value})} />
                             </div>
 
                             <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
                                 <div style={{ flex: 1 }}>
-                                    <label>Hajmi (litr)</label>
+                                    <label>Ҳажми (литр)</label>
                                     <input type="text" className="form-control" value={manualForm.quantity_liters} onChange={(e) => setManualForm({...manualForm, quantity_liters: formatMoneyInput(e.target.value)})} />
                                 </div>
                                 <div style={{ flex: 1 }}>
-                                    <label>Litr narxi</label>
+                                    <label>Литр нархи</label>
                                     <input type="text" className="form-control" value={manualForm.price_per_liter} onChange={(e) => setManualForm({...manualForm, price_per_liter: formatMoneyInput(e.target.value)})} />
                                 </div>
                             </div>
 
                             <div className="form-group">
-                                <label>Jami qarz summasi *</label>
+                                <label>Жами қарз суммаси *</label>
                                 <input type="text" className="form-control" required value={manualForm.total_amount} onChange={(e) => setManualForm({...manualForm, total_amount: formatMoneyInput(e.target.value)})} />
                             </div>
 
                             <div className="form-group">
-                                <label>Sana</label>
+                                <label>Сана</label>
                                 <input type="date" className="form-control" value={manualForm.date} onChange={(e) => setManualForm({...manualForm, date: e.target.value})} />
                             </div>
 
                             <div className="form-group">
-                                <label>Izoh</label>
+                                <label>Изоҳ</label>
                                 <input type="text" className="form-control" value={manualForm.note} onChange={(e) => setManualForm({...manualForm, note: e.target.value})} />
                             </div>
 
                             {manualError && <p style={{ color: 'var(--danger)', marginTop: '0.5rem' }}>{manualError}</p>}
                         </div>
                         <div className="modal-footer">
-                            <button className="btn btn-secondary" onClick={() => setManualModal(false)}>Bekor qilish</button>
+                            <button className="btn btn-secondary" onClick={() => setManualModal(false)}>Бекор қилиш</button>
                             <button className="btn btn-primary" onClick={submitManualDebt} disabled={manualLoading}>
-                                {manualLoading ? 'Saqlanmoqda...' : 'Saqlash'}
+                                {manualLoading ? 'Сақланмоқда...' : 'Сақлаш'}
                             </button>
                         </div>
                     </div>
@@ -349,37 +349,37 @@ export default function SupplierDebts() {
                 <div className="modal-overlay" onClick={() => setPayModal(null)}>
                     <div className="modal" onClick={(e) => e.stopPropagation()}>
                         <div className="modal-header">
-                            <h2>Qarz to'lash — {payModal.supplier?.name}</h2>
+                            <h2>Қарз тўлаш — {payModal.supplier?.name}</h2>
                             <button className="modal-close" onClick={() => setPayModal(null)}>✕</button>
                         </div>
                         <div className="modal-body">
                             <p style={{ marginBottom: '1rem', color: 'var(--text-secondary)' }}>
-                                Qolgan qarz: <strong style={{ color: 'var(--danger)' }}>{formatMoney(payModal.remaining_amount)}</strong>
+                                Қолган қарз: <strong style={{ color: 'var(--danger)' }}>{formatMoney(payModal.remaining_amount)}</strong>
                             </p>
                             <div className="form-group">
-                                <label>Summa (so'm)</label>
+                                <label>Сумма (сўм)</label>
                                 <input type="text" className="form-control" value={payForm.amount} onChange={(e) => setPayForm({ ...payForm, amount: formatMoneyInput(e.target.value) })} />
                             </div>
                             <div className="form-group">
-                                <label>To'lov turi</label>
+                                <label>Тўлов тури</label>
                                 <select className="form-control" value={payForm.payment_type} onChange={(e) => setPayForm({ ...payForm, payment_type: e.target.value })}>
-                                    <option value="cash">Naqd</option>
-                                    <option value="bank_transfer">Perechisleniya</option>
+                                    <option value="cash">Нақд</option>
+                                    <option value="bank_transfer">Перечисления</option>
                                 </select>
                             </div>
                             <div className="form-group">
-                                <label>Sana</label>
+                                <label>Сана</label>
                                 <input type="date" className="form-control" value={payForm.date} onChange={(e) => setPayForm({ ...payForm, date: e.target.value })} />
                             </div>
                             <div className="form-group">
-                                <label>Izoh (ixtiyoriy)</label>
+                                <label>Изоҳ (ихтиёрий)</label>
                                 <input type="text" className="form-control" value={payForm.note} onChange={(e) => setPayForm({ ...payForm, note: e.target.value })} />
                             </div>
                             {payError && <p style={{ color: 'var(--danger)', marginTop: '0.5rem' }}>{payError}</p>}
                         </div>
                         <div className="modal-footer">
-                            <button className="btn btn-secondary" onClick={() => setPayModal(null)}>Bekor qilish</button>
-                            <button className="btn btn-primary" onClick={submitPay} disabled={payLoading}>{payLoading ? 'Saqlanmoqda...' : 'To\'lash'}</button>
+                            <button className="btn btn-secondary" onClick={() => setPayModal(null)}>Бекор қилиш</button>
+                            <button className="btn btn-primary" onClick={submitPay} disabled={payLoading}>{payLoading ? 'Сақланмоқда...' : 'Тўлаш'}</button>
                         </div>
                     </div>
                 </div>
@@ -390,38 +390,38 @@ export default function SupplierDebts() {
                 <div className="modal-overlay" onClick={() => setDetailModal(null)}>
                     <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '560px' }}>
                         <div className="modal-header">
-                            <h2>Bizning qarz tafsilotlari</h2>
+                            <h2>Бизнинг қарз тафсилотлари</h2>
                             <button className="modal-close" onClick={() => setDetailModal(null)}>✕</button>
                         </div>
                         <div className="modal-body">
                             <div style={{ marginBottom: '1.25rem' }}>
-                                <div style={{ fontWeight: 700, fontSize: '0.82rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>Asosiy ma'lumotlar</div>
-                                <SDetailRow label="Qarz turi" value={
+                                <div style={{ fontWeight: 700, fontSize: '0.82rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>Асосий маълумотлар</div>
+                                <SDetailRow label="Қарз тури" value={
                                     detailModal.is_manual ? '🏷 Eski qarz (qo\'lda kiritilgan)'
                                     : detailModal.purchase_id ? `📦 Prixoddan qarz — #${detailModal.purchase_id}`
                                     : 'Qarz'
                                 } />
-                                <SDetailRow label="Yetkazib beruvchi" value={detailModal.supplier?.name || '—'} bold />
-                                <SDetailRow label="Telefon" value={detailModal.supplier?.phone || '—'} />
+                                <SDetailRow label="Етказиб берувчи" value={detailModal.supplier?.name || '—'} bold />
+                                <SDetailRow label="Телефон" value={detailModal.supplier?.phone || '—'} />
                                 {(detailModal.manual_product_name || detailModal.purchase?.product?.name) && (
-                                    <SDetailRow label="Mahsulot" value={detailModal.manual_product_name || detailModal.purchase?.product?.name} />
+                                    <SDetailRow label="Маҳсулот" value={detailModal.manual_product_name || detailModal.purchase?.product?.name} />
                                 )}
                                 {(detailModal.manual_quantity_liters || detailModal.purchase?.quantity_liters) && (
-                                    <SDetailRow label="Miqdor" value={`${Number(detailModal.manual_quantity_liters || detailModal.purchase?.quantity_liters).toLocaleString('uz-UZ')} L`} />
+                                    <SDetailRow label="Миқдор" value={`${Number(detailModal.manual_quantity_liters || detailModal.purchase?.quantity_liters).toLocaleString('uz-UZ')} L`} />
                                 )}
                                 {(detailModal.manual_price_per_liter || detailModal.purchase?.purchase_price_per_liter) && (
-                                    <SDetailRow label="Litr narxi" value={formatMoney(detailModal.manual_price_per_liter || detailModal.purchase?.purchase_price_per_liter)} />
+                                    <SDetailRow label="Литр нархи" value={formatMoney(detailModal.manual_price_per_liter || detailModal.purchase?.purchase_price_per_liter)} />
                                 )}
-                                <SDetailRow label="Sana" value={formatDate(detailModal.manual_date || detailModal.purchase?.date || detailModal.created_at)} />
-                                {detailModal.manual_note && <SDetailRow label="Izoh" value={detailModal.manual_note} />}
+                                <SDetailRow label="Сана" value={formatDate(detailModal.manual_date || detailModal.purchase?.date || detailModal.created_at)} />
+                                {detailModal.manual_note && <SDetailRow label="Изоҳ" value={detailModal.manual_note} />}
                             </div>
 
                             <div style={{ marginBottom: '1.25rem' }}>
-                                <div style={{ fontWeight: 700, fontSize: '0.82rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>Moliyaviy holat</div>
-                                <SDetailRow label="Dastlabki qarz" value={formatMoney(detailModal.original_amount)} />
-                                <SDetailRow label="To'langan" value={formatMoney(detailModal.paid_amount)} valueColor="var(--success)" />
-                                <SDetailRow label="Qolgan qarz" value={formatMoney(detailModal.remaining_amount)} valueColor="var(--danger)" bold />
-                                <SDetailRow label="Holat" value={
+                                <div style={{ fontWeight: 700, fontSize: '0.82rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>Молиявий ҳолат</div>
+                                <SDetailRow label="Дастлабки қарз" value={formatMoney(detailModal.original_amount)} />
+                                <SDetailRow label="Тўланган" value={formatMoney(detailModal.paid_amount)} valueColor="var(--success)" />
+                                <SDetailRow label="Қолган қарз" value={formatMoney(detailModal.remaining_amount)} valueColor="var(--danger)" bold />
+                                <SDetailRow label="Ҳолат" value={
                                     detailModal.status === 'closed' ? '✅ Yopilgan'
                                     : detailModal.paid_amount > 0 ? '🕐 Qisman to\'langan'
                                     : '🔴 Faol'
@@ -429,24 +429,24 @@ export default function SupplierDebts() {
                             </div>
 
                             <div>
-                                <div style={{ fontWeight: 700, fontSize: '0.82rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>To'lovlar tarixi</div>
+                                <div style={{ fontWeight: 700, fontSize: '0.82rem', color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem' }}>Тўловлар тарихи</div>
                                 {detailLoading ? (
-                                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.88rem' }}>Yuklanmoqda...</p>
+                                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.88rem' }}>Юкланмоқда...</p>
                                 ) : !detailModal.payments || detailModal.payments.length === 0 ? (
-                                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.88rem', fontStyle: 'italic' }}>To'lovlar hali mavjud emas</p>
+                                    <p style={{ color: 'var(--text-secondary)', fontSize: '0.88rem', fontStyle: 'italic' }}>Тўловлар ҳали мавжуд эмас</p>
                                 ) : (
                                     <table className="data-table" style={{ fontSize: '0.85rem' }}>
                                         <thead><tr>
-                                            <th>Sana</th>
-                                            <th>To'lov turi</th>
-                                            <th className="text-right">Summa</th>
-                                            <th>Izoh</th>
+                                            <th>Сана</th>
+                                            <th>Тўлов тури</th>
+                                            <th className="text-right">Сумма</th>
+                                            <th>Изоҳ</th>
                                         </tr></thead>
                                         <tbody>
                                             {detailModal.payments.map(p => (
                                                 <tr key={p.id}>
                                                     <td>{formatDate(p.date)}</td>
-                                                    <td>{p.payment_type === 'cash' ? 'Naqd' : 'Perechisleniya'}</td>
+                                                    <td>{p.payment_type === 'cash' ? 'Нақд' : 'Перечисления'}</td>
                                                     <td className="text-right" style={{ color: 'var(--success)', fontWeight: 600 }}>{formatMoney(p.amount)}</td>
                                                     <td style={{ color: 'var(--text-secondary)' }}>{p.note || '—'}</td>
                                                 </tr>
@@ -457,7 +457,7 @@ export default function SupplierDebts() {
                             </div>
                         </div>
                         <div className="modal-footer">
-                            <button className="btn btn-secondary" onClick={() => setDetailModal(null)}>Yopish</button>
+                            <button className="btn btn-secondary" onClick={() => setDetailModal(null)}>Ёпиш</button>
                         </div>
                     </div>
                 </div>

@@ -33,7 +33,7 @@ def create_category(
 ):
     existing = db.query(ExpenseCategory).filter(ExpenseCategory.name == data.name).first()
     if existing:
-        raise HTTPException(status_code=400, detail="Bu nomdagi kategoriya mavjud.")
+        raise HTTPException(status_code=400, detail="Бу номдаги категория мавжуд.")
     cat = ExpenseCategory(name=data.name)
     db.add(cat)
     db.commit()
@@ -50,7 +50,7 @@ def update_category(
 ):
     cat = db.query(ExpenseCategory).filter(ExpenseCategory.id == cat_id).first()
     if not cat:
-        raise HTTPException(status_code=404, detail="Kategoriya topilmadi.")
+        raise HTTPException(status_code=404, detail="Категория топилмади.")
     if data.name is not None:
         cat.name = data.name
     if data.is_active is not None:
@@ -68,7 +68,7 @@ def deactivate_category(
 ):
     cat = db.query(ExpenseCategory).filter(ExpenseCategory.id == cat_id).first()
     if not cat:
-        raise HTTPException(status_code=404, detail="Kategoriya topilmadi.")
+        raise HTTPException(status_code=404, detail="Категория топилмади.")
     cat.is_active = False
     db.commit()
     db.refresh(cat)
@@ -110,7 +110,7 @@ def get_expense(
 ):
     expense = db.query(Expense).filter(Expense.id == expense_id).first()
     if not expense:
-        raise HTTPException(status_code=404, detail="Xarajat topilmadi.")
+        raise HTTPException(status_code=404, detail="Харажат топилмади.")
     return ExpenseResponse.model_validate(expense)
 
 

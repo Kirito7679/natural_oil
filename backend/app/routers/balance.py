@@ -12,6 +12,14 @@ from app.services.balance_service import get_balance, set_initial_balance, adjus
 from app.utils.enums import MovementType, MovementDirection
 from app.utils.deps import get_current_user, require_admin
 
+def _parse_date(value: str | None):
+    from datetime import date as _date
+    try:
+        return _date.fromisoformat(value) if value else None
+    except ValueError:
+        return None
+
+
 router = APIRouter(prefix="/api/balance", tags=["Balance"])
 
 
@@ -54,9 +62,10 @@ def add_initial_balance(
             amount=request.amount,
             direction=MovementDirection.INCOME,
             movement_type=MovementType.INITIAL_BALANCE,
-            note=request.note or "Boshlang'ich balans",
+            note=request.note or "Бошланғич баланс",
             user_id=admin.id,
             auto_commit=True,
+            on_date=_parse_date(request.date),
         )
         return get_balance(db)
     except Exception as e:

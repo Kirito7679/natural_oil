@@ -7,7 +7,21 @@ Balance accounts:
 NO card balance account.
 """
 
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
+
+
+def movement_datetime(on_date: date | None = None) -> datetime:
+    """Pul harakati vaqti (UTC, naive).
+
+    on_date berilsa — operatsiyaning o'z sanasi (masalan, kecha bo'lgan sotuv kechagi
+    kunga yoziladi), vaqti esa hozirgi mahalliy soat. Aks holda — hozirgi vaqt.
+    """
+    now_utc = datetime.now(timezone.utc).replace(tzinfo=None)
+    if on_date is None:
+        return now_utc
+    local_now = datetime.now()
+    local_dt = datetime.combine(on_date, local_now.time())
+    return local_dt - datetime.now().astimezone().utcoffset()
 
 from sqlalchemy.orm import Session
 
@@ -66,7 +80,7 @@ def set_initial_balance(
             amount=cash_amount,
             related_table="balance_accounts",
             related_id=cash_acc.id,
-            note=f"Boshlang'ich naqd balans: {cash_amount:,.0f} UZS",
+            note=f"Бошланғич нақд баланс: {cash_amount:,.0f} UZS",
             created_by=user_id,
         ))
 
@@ -84,7 +98,7 @@ def set_initial_balance(
             amount=bank_transfer_amount,
             related_table="balance_accounts",
             related_id=bank_acc.id,
-            note=f"Boshlang'ich perechisleniya balans: {bank_transfer_amount:,.0f} UZS",
+            note=f"Бошланғич перечисления баланс: {bank_transfer_amount:,.0f} UZS",
             created_by=user_id,
         ))
 
@@ -120,7 +134,7 @@ def adjust_balance(
         amount=abs(amount),
         related_table="balance_accounts",
         related_id=acc.id,
-        note=note or f"Balans tuzatish: {amount:,.0f} UZS",
+        note=note or f"Баланс тузатиш: {amount:,.0f} UZS",
         created_by=user_id,
     ))
 
@@ -139,6 +153,7 @@ def update_balance(
     note: str = "",
     user_id: int | None = None,
     auto_commit: bool = False,
+    on_date: date | None = None,
 ) -> None:
     """Internal helper: update a balance account and record a money movement.
 
@@ -147,7 +162,7 @@ def update_balance(
     """
     accounts = get_or_create_balance_accounts(db)
     acc = accounts[payment_type.value]
-    now = datetime.now(timezone.utc)
+    now = movement_datetime(on_date)
 
     if direction == MovementDirection.OUTGOING:
         acc.current_balance -= amount

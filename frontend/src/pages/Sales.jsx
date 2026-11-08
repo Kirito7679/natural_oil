@@ -7,6 +7,7 @@ import { Eye } from 'lucide-react';
 import { getSales, createSale, cancelSale } from '../api/sales';
 import { getProducts } from '../api/products';
 import { getPartners } from '../api/partners';
+import PartnerPicker from '../components/PartnerPicker';
 import { getInventoryBatches } from '../api/inventory';
 import { formatDateTime, formatCurrency, formatNumber, formatMoneyInput, parseMoneyInput } from '../utils/formatters';
 import { downloadExcel } from '../utils/excelDownload';
@@ -118,23 +119,23 @@ export default function Sales() {
     setError('');
 
     if (!form.customer_id || !form.product_id || !form.inventory_batch_id) {
-      setError("Mijoz, mahsulot va ombor partiyasini tanlang");
+      setError("Мижоз, маҳсулот ва омбор партиясини танланг");
       return;
     }
     if (qty <= 0) {
-      setError("Miqdor 0 dan katta bo'lishi kerak");
+      setError("Миқдор 0 дан катта бўлиши керак");
       return;
     }
     if (salePrice <= 0) {
-      setError("Sotish narxi 0 dan katta bo'lishi kerak");
+      setError("Сотиш нархи 0 дан катта бўлиши керак");
       return;
     }
     if (paidAmount > totalSale + 0.01) {
-      setError("To'langan summa umumiy sotuv summasidan katta bo'lishi mumkin emas.");
+      setError("Тўланган сумма умумий сотув суммасидан катта бўлиши мумкин эмас.");
       return;
     }
     if (selectedBatchDetails && qty > selectedBatchDetails.remaining_quantity_liters) {
-      setError(`Ombordagi qoldiq yetarli emas. Maksimal: ${selectedBatchDetails.remaining_quantity_liters} L`);
+      setError(`Омбордаги қолдиқ етарли эмас. Максимал: ${selectedBatchDetails.remaining_quantity_liters} Л`);
       return;
     }
 
@@ -163,20 +164,20 @@ export default function Sales() {
       setModalOpen(false);
       fetchData();
     } catch (err) {
-      setError(err.response?.data?.detail || "Xatolik yuz berdi");
+      setError(err.response?.data?.detail || "Хатолик юз берди");
     } finally {
       setSaving(false);
     }
   };
 
   const handleCancel = async (id) => {
-    if (!window.confirm("Haqiqatan ham bu sotuvni bekor qilmoqchimisiz?")) return;
+    if (!window.confirm("Ҳақиқатан ҳам бу сотувни бекор қилмоқчимисиз?")) return;
     try {
       await cancelSale(id);
       setDetailSale(null);
       fetchData();
     } catch (err) {
-      alert(err.response?.data?.detail || "Bekor qilishda xatolik");
+      alert(err.response?.data?.detail || "Бекор қилишда хатолик");
     }
   };
 
@@ -191,7 +192,7 @@ export default function Sales() {
   return (
     <div className="page">
       <div className="page-header">
-        <h1 className="page-title">Sotuv</h1>
+        <h1 className="page-title">Сотув</h1>
         <div className="action-buttons">
           <button
             className="btn btn-secondary"
@@ -200,7 +201,7 @@ export default function Sales() {
             ⬇ Excel
           </button>
           <button className="btn btn--primary" onClick={openCreateModal}>
-            + Yangi sotuv
+            + Янги сотув
           </button>
         </div>
       </div>
@@ -210,24 +211,24 @@ export default function Sales() {
           <table className="data-table">
             <thead>
               <tr>
-                <th>Sana</th>
-                <th>Mijoz</th>
-                <th>Mahsulot</th>
-                <th className="text-right">Miqdor</th>
-                <th className="text-right">Sotish narxi</th>
-                <th className="text-right">Umumiy sotuv</th>
-                <th className="text-right">To'langan</th>
-                <th className="text-right">Qarz</th>
-                <th>To'lov turi</th>
-                <th>Status</th>
-                <th style={{ textAlign: 'center' }}>Amal</th>
+                <th>Сана</th>
+                <th>Мижоз</th>
+                <th>Маҳсулот</th>
+                <th className="text-right">Миқдор</th>
+                <th className="text-right">Сотиш нархи</th>
+                <th className="text-right">Умумий сотув</th>
+                <th className="text-right">Тўланган</th>
+                <th className="text-right">Қарз</th>
+                <th>Тўлов тури</th>
+                <th>Статус</th>
+                <th style={{ textAlign: 'center' }}>Амал</th>
               </tr>
             </thead>
             <tbody>
               {sales.length === 0 ? (
                 <tr>
                   <td colSpan={11}>
-                    <p className="empty-message">Sotuvlar mavjud emas</p>
+                    <p className="empty-message">Сотувлар мавжуд эмас</p>
                   </td>
                 </tr>
               ) : (
@@ -236,7 +237,7 @@ export default function Sales() {
                     <td>{s.date}</td>
                     <td className="font-medium">{s.customer.name}</td>
                     <td>{s.product.name}</td>
-                    <td className="text-right">{formatNumber(s.quantity_liters)} L</td>
+                    <td className="text-right">{formatNumber(s.quantity_liters)} Л</td>
                     <td className="text-right">{formatCurrency(s.sale_price_per_liter)}</td>
                     <td className="text-right font-medium">{formatCurrency(s.total_sale_amount)}</td>
                     <td className="text-right" style={{ color: 'var(--success)' }}>
@@ -247,19 +248,19 @@ export default function Sales() {
                     </td>
                     <td>
                       {s.payments && s.payments.length > 0
-                        ? s.payments.map(p => p.payment_type === 'cash' ? 'Naqd' : 'Perechisleniya').join(', ')
+                        ? s.payments.map(p => p.payment_type === 'cash' ? 'Нақд' : 'Перечисления').join(', ')
                         : '—'}
                     </td>
                     <td>
                       <span className={`badge badge--${s.status === 'active' ? 'active' : 'cancelled'}`}>
-                        {s.status === 'active' ? 'Faol' : 'Bekor qilingan'}
+                        {s.status === 'active' ? 'Фаол' : 'Бекор қилинган'}
                       </span>
                     </td>
                     <td style={{ textAlign: 'center' }}>
                       <button
                         className="row-action-btn"
                         onClick={() => setDetailSale(s)}
-                        title="Batafsil"
+                        title="Батафсил"
                       >
                         <Eye size={16} strokeWidth={2.2} />
                       </button>
@@ -276,7 +277,7 @@ export default function Sales() {
       <Modal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
-        title="Yangi sotuv"
+        title="Янги сотув"
         width={700}
       >
         <form onSubmit={handleSubmit}>
@@ -284,48 +285,47 @@ export default function Sales() {
 
           {isLoss && (
             <div className="alert alert--error" style={{ marginBottom: '16px', fontWeight: 'bold' }}>
-              Sotish narxi kirim narxidan past. Bu sotuv zarar bilan amalga oshadi.
+              Сотиш нархи кирим нархидан паст. Бу сотув зарар билан амалга ошади.
             </div>
           )}
 
           <div className="form-row">
             <div className="form-group">
-              <label>Sana *</label>
+              <label>Сана *</label>
               <input type="date" value={form.date} onChange={(e) => updateField('date', e.target.value)} required />
             </div>
-            <div className="form-group">
-              <label>Mijoz *</label>
-              <select value={form.customer_id} onChange={(e) => updateField('customer_id', e.target.value)} required>
-                <option value="">Tanlang...</option>
-                {customers.map(c => (
-                  <option key={c.id} value={c.id}>{c.name}</option>
-                ))}
-              </select>
-            </div>
+            <PartnerPicker
+              type="customer"
+              label="Мижоз"
+              partners={customers}
+              onPartnersChange={setCustomers}
+              value={form.customer_id}
+              onChange={(v) => updateField('customer_id', v)}
+            />
           </div>
 
           <div className="form-row">
             <div className="form-group">
-              <label>Mahsulot *</label>
+              <label>Маҳсулот *</label>
               <select value={form.product_id} onChange={(e) => updateField('product_id', e.target.value)} required>
-                <option value="">Tanlang...</option>
+                <option value="">Танланг...</option>
                 {products.map(p => (
                   <option key={p.id} value={p.id}>{p.name}</option>
                 ))}
               </select>
             </div>
             <div className="form-group">
-              <label>Ombor partiyasi *</label>
+              <label>Омбор партияси *</label>
               <select
                 value={form.inventory_batch_id}
                 onChange={(e) => updateField('inventory_batch_id', e.target.value)}
                 required
                 disabled={!form.product_id || availableBatches.length === 0}
               >
-                <option value="">Tanlang...</option>
+                <option value="">Танланг...</option>
                 {availableBatches.map(b => (
                   <option key={b.id} value={b.id}>
-                    Qoldiq: {b.remaining_quantity_liters} L (Kirim: {formatCurrency(b.purchase_price_per_liter)})
+                    Қолдиқ: {b.remaining_quantity_liters} Л (Кирим: {formatCurrency(b.purchase_price_per_liter)})
                   </option>
                 ))}
               </select>
@@ -334,17 +334,17 @@ export default function Sales() {
 
           {selectedBatchDetails && (
             <div className="modal-section">
-              <div className="modal-section-title">Partiya ma'lumotlari</div>
+              <div className="modal-section-title">Партия маълумотлари</div>
               <div className="modal-section-row">
-                <span className="label">Kirim narxi</span>
+                <span className="label">Кирим нархи</span>
                 <span className="value">{formatCurrency(selectedBatchDetails.purchase_price_per_liter)}</span>
               </div>
               <div className="modal-section-row">
-                <span className="label">Qolgan miqdor</span>
-                <span className="value">{selectedBatchDetails.remaining_quantity_liters} L</span>
+                <span className="label">Қолган миқдор</span>
+                <span className="value">{selectedBatchDetails.remaining_quantity_liters} Л</span>
               </div>
               <div className="modal-section-row">
-                <span className="label">Yetkazib beruvchi</span>
+                <span className="label">Етказиб берувчи</span>
                 <span className="value">{selectedBatchDetails.supplier?.name}</span>
               </div>
             </div>
@@ -352,7 +352,7 @@ export default function Sales() {
 
           <div className="form-row">
             <div className="form-group">
-              <label>Miqdor, litrda *</label>
+              <label>Миқдор, литрда *</label>
               <input
                 type="text"
                 value={form.quantity_liters}
@@ -361,7 +361,7 @@ export default function Sales() {
               />
             </div>
             <div className="form-group">
-              <label>Sotish narxi *</label>
+              <label>Сотиш нархи *</label>
               <input
                 type="text"
                 value={form.sale_price_per_liter}
@@ -372,23 +372,23 @@ export default function Sales() {
           </div>
 
           <div className="modal-section">
-            <div className="modal-section-title">Hisob-kitob (jonli)</div>
+            <div className="modal-section-title">Ҳисоб-китоб (жонли)</div>
             <div className="modal-section-row">
-              <span className="label">1 litr foyda</span>
+              <span className="label">1 литр фойда</span>
               <span className={`value ${profitPerLiter >= 0 ? 'value--green' : 'value--red'}`}>
                 {formatCurrency(profitPerLiter)}
               </span>
             </div>
             <div className="modal-section-row">
-              <span className="label">Umumiy tannarx</span>
+              <span className="label">Умумий таннарх</span>
               <span className="value">{formatCurrency(totalCost)}</span>
             </div>
             <div className="modal-section-row">
-              <span className="label">Umumiy sotuv</span>
+              <span className="label">Умумий сотув</span>
               <span className="value value--gold">{formatCurrency(totalSale)}</span>
             </div>
             <div className="modal-section-row">
-              <span className="label">Umumiy foyda</span>
+              <span className="label">Умумий фойда</span>
               <span className={`value ${totalProfit >= 0 ? 'value--green' : 'value--red'}`}>
                 {formatCurrency(totalProfit)}
               </span>
@@ -397,7 +397,7 @@ export default function Sales() {
 
           <div className="form-row">
             <div className="form-group">
-              <label>To'langan summa</label>
+              <label>Тўланган сумма</label>
               <input
                 type="text"
                 value={form.paid_amount}
@@ -405,33 +405,33 @@ export default function Sales() {
                 placeholder="0.00"
               />
               <div style={{ marginTop: '8px', fontSize: '13px', color: 'var(--text-secondary)' }}>
-                Qolgan qarz: <strong style={{ color: 'var(--danger)' }}>{formatCurrency(remainingDebt)} UZS</strong>
+                Қолган қарз: <strong style={{ color: 'var(--danger)' }}>{formatCurrency(remainingDebt)} UZS</strong>
               </div>
             </div>
             <div className="form-group">
-              <label>To'lov turi</label>
+              <label>Тўлов тури</label>
               <select value={form.payment_type} onChange={(e) => updateField('payment_type', e.target.value)}>
-                <option value="cash">Naqd</option>
-                <option value="bank_transfer">Perechisleniya</option>
+                <option value="cash">Нақд</option>
+                <option value="bank_transfer">Перечисления</option>
               </select>
             </div>
           </div>
 
           <div className="form-group">
-            <label>Izoh</label>
+            <label>Изоҳ</label>
             <input
               type="text" value={form.note}
               onChange={(e) => updateField('note', e.target.value)}
-              placeholder="Qo'shimcha ma'lumot..."
+              placeholder="Қўшимча маълумот..."
             />
           </div>
 
           <div className="form-actions">
             <button type="button" className="btn btn--outline" onClick={() => setModalOpen(false)}>
-              Bekor qilish
+              Бекор қилиш
             </button>
             <button type="submit" className="btn btn--primary" disabled={saving}>
-              {saving ? 'Saqlanmoqda...' : 'Saqlash'}
+              {saving ? 'Сақланмоқда...' : 'Сақлаш'}
             </button>
           </div>
         </form>
@@ -441,35 +441,35 @@ export default function Sales() {
       <Modal
         isOpen={!!detailSale}
         onClose={() => setDetailSale(null)}
-        title={detailSale ? `Sotuv #${detailSale.id} — batafsil` : ''}
+        title={detailSale ? `Сотув #${detailSale.id} — батафсил` : ''}
         width={620}
       >
         {detailSale && (
           <>
             {/* Asosiy ma'lumotlar */}
             <div className="modal-section">
-              <div className="modal-section-title">Asosiy ma'lumotlar</div>
+              <div className="modal-section-title">Асосий маълумотлар</div>
               <div className="modal-section-row">
-                <span className="label">Sana</span>
+                <span className="label">Сана</span>
                 <span className="value">{detailSale.date}</span>
               </div>
               <div className="modal-section-row">
-                <span className="label">Mijoz</span>
+                <span className="label">Мижоз</span>
                 <span className="value">{detailSale.customer?.name}</span>
               </div>
               <div className="modal-section-row">
-                <span className="label">Mahsulot</span>
+                <span className="label">Маҳсулот</span>
                 <span className="value">{detailSale.product?.name}</span>
               </div>
               <div className="modal-section-row">
-                <span className="label">Miqdor</span>
-                <span className="value">{formatNumber(detailSale.quantity_liters)} L</span>
+                <span className="label">Миқдор</span>
+                <span className="value">{formatNumber(detailSale.quantity_liters)} Л</span>
               </div>
               <div className="modal-section-row">
-                <span className="label">Status</span>
+                <span className="label">Статус</span>
                 <span className="value">
                   <span className={`badge badge--${detailSale.status === 'active' ? 'active' : 'cancelled'}`}>
-                    {detailSale.status === 'active' ? 'Faol' : 'Bekor qilingan'}
+                    {detailSale.status === 'active' ? 'Фаол' : 'Бекор қилинган'}
                   </span>
                 </span>
               </div>
@@ -477,31 +477,31 @@ export default function Sales() {
 
             {/* Narx va foyda */}
             <div className="modal-section">
-              <div className="modal-section-title">Narx va foyda</div>
+              <div className="modal-section-title">Нарх ва фойда</div>
               <div className="modal-section-row">
-                <span className="label">Kirim narxi (1 L)</span>
+                <span className="label">Кирим нархи (1 Л)</span>
                 <span className="value">{formatCurrency(detailSale.purchase_price_per_liter)}</span>
               </div>
               <div className="modal-section-row">
-                <span className="label">Sotish narxi (1 L)</span>
+                <span className="label">Сотиш нархи (1 Л)</span>
                 <span className="value">{formatCurrency(detailSale.sale_price_per_liter)}</span>
               </div>
               <div className="modal-section-row">
-                <span className="label">1 litr foyda</span>
+                <span className="label">1 литр фойда</span>
                 <span className={`value ${detailSale.profit_per_liter >= 0 ? 'value--green' : 'value--red'}`}>
                   {formatCurrency(detailSale.profit_per_liter)}
                 </span>
               </div>
               <div className="modal-section-row">
-                <span className="label">Umumiy tannarx</span>
+                <span className="label">Умумий таннарх</span>
                 <span className="value">{formatCurrency(detailSale.total_cost)}</span>
               </div>
               <div className="modal-section-row">
-                <span className="label">Umumiy sotuv</span>
+                <span className="label">Умумий сотув</span>
                 <span className="value value--gold">{formatCurrency(detailSale.total_sale_amount)}</span>
               </div>
               <div className="modal-section-row">
-                <span className="label">Umumiy foyda</span>
+                <span className="label">Умумий фойда</span>
                 <span className={`value ${detailSale.total_profit >= 0 ? 'value--green' : 'value--red'}`}>
                   {formatCurrency(detailSale.total_profit)}
                 </span>
@@ -510,23 +510,23 @@ export default function Sales() {
 
             {/* To'lov */}
             <div className="modal-section">
-              <div className="modal-section-title">To'lov</div>
+              <div className="modal-section-title">Тўлов</div>
               <div className="modal-section-row">
-                <span className="label">To'langan summa</span>
+                <span className="label">Тўланган сумма</span>
                 <span className="value value--green">{formatCurrency(detailSale.paid_amount)}</span>
               </div>
               <div className="modal-section-row">
-                <span className="label">Qolgan qarz</span>
+                <span className="label">Қолган қарз</span>
                 <span className={`value ${detailSale.debt_amount > 0 ? 'value--red' : ''}`}>
                   {formatCurrency(detailSale.debt_amount)}
                 </span>
               </div>
               {detailSale.payments && detailSale.payments.length > 0 && (
                 <div className="modal-section-row">
-                  <span className="label">To'lov turi</span>
+                  <span className="label">Тўлов тури</span>
                   <span className="value">
                     {detailSale.payments.map(p =>
-                      `${p.payment_type === 'cash' ? 'Naqd' : 'Perechisleniya'} (${formatCurrency(p.amount)})`
+                      `${p.payment_type === 'cash' ? 'Нақд' : 'Перечисления'} (${formatCurrency(p.amount)})`
                     ).join(', ')}
                   </span>
                 </div>
@@ -535,21 +535,21 @@ export default function Sales() {
 
             {detailSale.note && (
               <div className="modal-section">
-                <div className="modal-section-title">Izoh</div>
+                <div className="modal-section-title">Изоҳ</div>
                 <div style={{ fontSize: 13, color: 'var(--text-primary)' }}>{detailSale.note}</div>
               </div>
             )}
 
             <div className="form-actions">
               <button className="btn btn--outline" onClick={() => setDetailSale(null)}>
-                Yopish
+                Ёпиш
               </button>
               {detailSale.status === 'active' && (
                 <button
                   className="btn btn--danger"
                   onClick={() => handleCancel(detailSale.id)}
                 >
-                  Sotuvni bekor qilish
+                  Сотувни бекор қилиш
                 </button>
               )}
             </div>

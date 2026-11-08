@@ -42,7 +42,39 @@ def get_db():
         db.close()
 
 
+def _add_missing_columns():
+    """Eski bazalarga yangi ustunlarni qo'shadi (oddiy avto-migratsiya).
+
+    create_all() mavjud jadvalga yangi ustun qo'shmaydi. Shuning uchun
+    modelda bor, lekin bazada yo'q ustunlar ALTER TABLE orqali qo'shiladi.
+    """
+    from sqlalchemy import inspect, text
+
+    insp = inspect(engine)
+    existing_tables = set(insp.get_table_names())
+    with engine.begin() as conn:
+        for table in Base.metadata.sorted_tables:
+            if table.name not in existing_tables:
+                continue
+            have = {c["name"] for c in insp.get_columns(table.name)}
+            for col in table.columns:
+                if col.name in have:
+                    continue
+                col_type = col.type.compile(dialect=engine.dialect)
+                default_sql = ""
+                d = col.default.arg if col.default is not None and not callable(col.default.arg) else None
+                if isinstance(d, bool):
+                    default_sql = f" DEFAULT {int(d)}"
+                elif isinstance(d, (int, float)):
+                    default_sql = f" DEFAULT {d}"
+                elif isinstance(d, str):
+                    default_sql = " DEFAULT '" + d.replace("'", "''") + "'"
+                conn.execute(text(f'ALTER TABLE "{table.name}" ADD COLUMN "{col.name}" {col_type}{default_sql}'))
+                print(f"[MIGRATION] {table.name}.{col.name} qo'shildi")
+
+
 def create_tables():
     """Create all tables. Called once on application startup."""
     import app.models  # noqa: F401 — ensure all models are imported
     Base.metadata.create_all(bind=engine)
+    _add_missing_columns()

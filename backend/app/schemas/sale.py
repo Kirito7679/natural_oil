@@ -17,7 +17,7 @@ class SalePaymentCreate(BaseModel):
     @classmethod
     def validate_amount(cls, v: float) -> float:
         if v <= 0:
-            raise ValueError("To'lov summasi 0 dan katta bo'lishi kerak")
+            raise ValueError("Тўлов суммаси 0 дан катта бўлиши керак")
         return v
 
 
@@ -39,16 +39,16 @@ class SaleCreate(BaseModel):
     @model_validator(mode="after")
     def validate_sale(self) -> "SaleCreate":
         if self.quantity_liters <= 0:
-            raise ValueError("Miqdor 0 dan katta bo'lishi kerak")
+            raise ValueError("Миқдор 0 дан катта бўлиши керак")
             
         if self.sale_price_per_liter <= 0:
-            raise ValueError("Sotish narxi 0 dan katta bo'lishi kerak")
+            raise ValueError("Сотиш нархи 0 дан катта бўлиши керак")
 
         total_sale = self.quantity_liters * self.sale_price_per_liter
         total_paid = sum(p.amount for p in self.payments)
 
         if total_paid > total_sale + 0.01:
-            raise ValueError("To'langan summa umumiy sotuv summasidan katta bo'lishi mumkin emas.")
+            raise ValueError("Тўланган сумма умумий сотув суммасидан катта бўлиши мумкин эмас.")
 
         return self
 

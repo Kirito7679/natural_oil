@@ -32,38 +32,38 @@ SECTION_FONT = Font(bold=True, size=13)
 
 def format_money(value: float | int | None) -> str:
     if value is None:
-        return "0 so'm"
+        return "0 сўм"
     try:
         val = int(round(value))
         # This will format with spaces, e.g. "10 000 000 so'm"
-        return f"{val:,}".replace(",", " ") + " so'm"
+        return f"{val:,}".replace(",", " ") + " сўм"
     except Exception:
-        return "0 so'm"
+        return "0 сўм"
 
-PAYMENT_LABELS = {"cash": "Naqd", "bank_transfer": "Perechisleniya"}
-DIRECTION_LABELS = {"income": "Kirim", "outgoing": "Chiqim"}
+PAYMENT_LABELS = {"cash": "Нақд", "bank_transfer": "Перечисления"}
+DIRECTION_LABELS = {"income": "Кирим", "outgoing": "Чиқим"}
 STATUS_LABELS = {
-    "active": "Faol",
-    "cancelled": "Bekor qilingan",
-    "closed": "Yopilgan",
-    "finished": "Tugagan",
+    "active": "Фаол",
+    "cancelled": "Бекор қилинган",
+    "closed": "Ёпилган",
+    "finished": "Тугаган",
 }
 MOVEMENT_LABELS = {
-    "initial_balance": "Boshlang'ich balans",
-    "purchase_payment": "Xarid to'lovi",
-    "sale_payment": "Sotuv to'lovi",
-    "customer_debt_payment": "Mijoz qarz to'lovi",
-    "supplier_debt_payment": "Yetkazuvchi qarz to'lovi",
-    "expense": "Xarajat",
-    "balance_adjustment": "Balans tuzatish",
-    "cancellation": "Bekor qilish",
+    "initial_balance": "Бошланғич баланс",
+    "purchase_payment": "Харид тўлови",
+    "sale_payment": "Сотув тўлови",
+    "customer_debt_payment": "Мижоз қарз тўлови",
+    "supplier_debt_payment": "Етказувчи қарз тўлови",
+    "expense": "Харажат",
+    "balance_adjustment": "Баланс тузатиш",
+    "cancellation": "Бекор қилиш",
 }
 TABLE_LABELS = {
-    "purchases": "Prixod",
-    "sales": "Sotuv",
-    "expenses": "Xarajat",
-    "debt_payments": "Qarz to'lovi",
-    "balance_accounts": "Balans",
+    "purchases": "Приход",
+    "sales": "Сотув",
+    "expenses": "Харажат",
+    "debt_payments": "Қарз тўлови",
+    "balance_accounts": "Баланс",
 }
 
 
@@ -174,34 +174,34 @@ def export_general_report(
     # Build workbook
     wb = Workbook()
     ws = wb.active
-    ws.title = "Umumiy hisobot"
+    ws.title = "Умумий ҳисобот"
 
-    ws.append(["NATURAL OIL ERP — UMUMIY HISOBOT"])
+    ws.append(["NATURAL OIL ERP — УМУМИЙ ҲИСОБОТ"])
     ws[1][0].font = SECTION_FONT
-    ws.append([f"Sana oralig'i: {date_from} — {date_to}"])
+    ws.append([f"Сана оралиғи: {date_from} — {date_to}"])
     ws.append([])
 
     # Summary table
     summary_rows = [
-        ("Jami sotuv", total_sale),
-        ("Jami tannarx", total_cost),
-        ("Yalpi foyda", total_profit),
-        ("Jami xarajat", total_expense),
-        ("Sof foyda", total_profit - total_expense),
-        ("Jami xarid", total_purchase),
-        ("Mijozlar qarzi", cust_debt),
-        ("Bizning qarzlar", supp_debt),
-        ("Naqd kirim", cash_in),
-        ("Naqd chiqim", cash_out),
-        ("Naqd balans (Hisoblangan)", cash_in - cash_out),
-        ("Perechisleniya kirim", bank_in),
-        ("Perechisleniya chiqim", bank_out),
-        ("Perechisleniya balans (Hisoblangan)", bank_in - bank_out),
-        ("Naqd balans", cash_bal),
-        ("Perechisleniya balans", bank_bal),
-        ("Umumiy balans", cash_bal + bank_bal),
+        ("Жами сотув", total_sale),
+        ("Жами таннарх", total_cost),
+        ("Ялпи фойда", total_profit),
+        ("Жами харажат", total_expense),
+        ("Соф фойда", total_profit - total_expense),
+        ("Жами харид", total_purchase),
+        ("Мижозлар қарзи", cust_debt),
+        ("Бизнинг қарзлар", supp_debt),
+        ("Нақд кирим", cash_in),
+        ("Нақд чиқим", cash_out),
+        ("Нақд баланс (Ҳисобланган)", cash_in - cash_out),
+        ("Перечисления кирим", bank_in),
+        ("Перечисления чиқим", bank_out),
+        ("Перечисления баланс (Ҳисобланган)", bank_in - bank_out),
+        ("Нақд баланс", cash_bal),
+        ("Перечисления баланс", bank_bal),
+        ("Умумий баланс", cash_bal + bank_bal),
     ]
-    ws.append(["Ko'rsatkich", "Qiymat"])
+    ws.append(["Кўрсаткич", "Қиймат"])
     style_header_row(ws, ws.max_row)
     summary_start = ws.max_row
     for label, value in summary_rows:
@@ -213,10 +213,10 @@ def export_general_report(
     ws.append([])
 
     # Sales table
-    ws.append(["SOTUVLAR"])
+    ws.append(["СОТУВЛАР"])
     ws[ws.max_row][0].font = SECTION_FONT
-    ws.append(["Sana", "Mijoz", "Mahsulot", "Miqdor (l)",
-               "Sotish narxi", "Sotuv summasi", "Foyda"])
+    ws.append(["Сана", "Мижоз", "Маҳсулот", "Миқдор (л)",
+               "Сотиш нархи", "Сотув суммаси", "Фойда"])
     style_header_row(ws, ws.max_row)
     for s in sales:
         ws.append([
@@ -230,7 +230,7 @@ def export_general_report(
         ])
     if sales:
         ws.append([
-            "JAMI", "", "",
+            "ЖАМИ", "", "",
             sum(s.quantity_liters for s in sales),
             "",
             format_money(total_sale),
@@ -245,17 +245,17 @@ def export_general_report(
     # Expenses by category
     expense_by_cat = {}
     for e in expenses:
-        cat = e.category.name if e.category else "Boshqa"
+        cat = e.category.name if e.category else "Бошқа"
         expense_by_cat[cat] = expense_by_cat.get(cat, 0) + e.amount
 
-    ws.append(["XARAJATLAR (KATEGORIYA BO'YICHA)"])
+    ws.append(["ХАРАЖАТЛАР (КАТЕГОРИЯ БЎЙИЧА)"])
     ws[ws.max_row][0].font = SECTION_FONT
-    ws.append(["Kategoriya", "Summa"])
+    ws.append(["Категория", "Сумма"])
     style_header_row(ws, ws.max_row)
     for cat, amt in sorted(expense_by_cat.items(), key=lambda x: -x[1]):
         ws.append([cat, format_money(amt)])
     if expense_by_cat:
-        ws.append(["JAMI", format_money(total_expense)])
+        ws.append(["ЖАМИ", format_money(total_expense)])
         for cell in ws[ws.max_row]:
             cell.font = SUMMARY_FONT
 
@@ -263,14 +263,14 @@ def export_general_report(
     ws.append([])
 
     # Cash flow
-    ws.append(["PUL OQIMI"])
+    ws.append(["ПУЛ ОҚИМИ"])
     ws[ws.max_row][0].font = SECTION_FONT
-    ws.append(["Ko'rsatkich", "Naqd", "Perechisleniya"])
+    ws.append(["Кўрсаткич", "Нақд", "Перечисления"])
     style_header_row(ws, ws.max_row)
     flow_rows = [
-        ("Kirim", cash_in, bank_in),
-        ("Chiqim", cash_out, bank_out),
-        ("Balans", cash_in - cash_out, bank_in - bank_out),
+        ("Кирим", cash_in, bank_in),
+        ("Чиқим", cash_out, bank_out),
+        ("Баланс", cash_in - cash_out, bank_in - bank_out),
     ]
     for label, c, b in flow_rows:
         ws.append([label, format_money(c), format_money(b)])
@@ -315,13 +315,13 @@ def export_sales(
 
     wb = Workbook()
     ws = wb.active
-    ws.title = "Sotuvlar"
+    ws.title = "Сотувлар"
 
     headers = [
-        "Sana", "Mijoz", "Mahsulot", "Ombor partiyasi", "Miqdor (l)",
-        "Kirim narxi", "Sotish narxi", "1 l foyda",
-        "Umumiy sotuv", "Umumiy tannarx", "Umumiy foyda",
-        "To'langan", "Qarz", "To'lov turi", "Status", "Izoh",
+        "Сана", "Мижоз", "Маҳсулот", "Омбор партияси", "Миқдор (л)",
+        "Кирим нархи", "Сотиш нархи", "1 л фойда",
+        "Умумий сотув", "Умумий таннарх", "Умумий фойда",
+        "Тўланган", "Қарз", "Тўлов тури", "Статус", "Изоҳ",
     ]
     ws.append(headers)
     style_header_row(ws)
@@ -351,7 +351,7 @@ def export_sales(
 
     if sales:
         ws.append([
-            "JAMI", "", "", "",
+            "ЖАМИ", "", "", "",
             sum(s.quantity_liters for s in sales),
             "", "", "",
             format_money(sum(s.total_sale_amount for s in sales)),
@@ -403,12 +403,12 @@ def export_purchases(
 
     wb = Workbook()
     ws = wb.active
-    ws.title = "Prixodlar"
+    ws.title = "Приходлар"
 
     headers = [
-        "Sana", "Yetkazib beruvchi", "Mahsulot", "Miqdor (l)",
-        "1 l kirim narxi", "Umumiy summa", "To'langan", "Qarz",
-        "To'lov turi", "Status", "Izoh",
+        "Сана", "Етказиб берувчи", "Маҳсулот", "Миқдор (л)",
+        "1 л кирим нархи", "Умумий сумма", "Тўланган", "Қарз",
+        "Тўлов тури", "Статус", "Изоҳ",
     ]
     ws.append(headers)
     style_header_row(ws)
@@ -433,7 +433,7 @@ def export_purchases(
 
     if items:
         ws.append([
-            "JAMI", "", "",
+            "ЖАМИ", "", "",
             sum(p.quantity_liters for p in items),
             "",
             format_money(sum(p.total_amount for p in items)),
@@ -471,12 +471,12 @@ def export_inventory(
 
     wb = Workbook()
     ws = wb.active
-    ws.title = "Ombor"
+    ws.title = "Омбор"
 
     headers = [
-        "Mahsulot", "Yetkazib beruvchi", "Kirim narxi",
-        "Boshlang'ich (l)", "Qolgan (l)", "Qoldiq tannarxi",
-        "Status", "Sana",
+        "Маҳсулот", "Етказиб берувчи", "Кирим нархи",
+        "Бошланғич (л)", "Қолган (л)", "Қолдиқ таннархи",
+        "Статус", "Сана",
     ]
     ws.append(headers)
     style_header_row(ws)
@@ -503,7 +503,7 @@ def export_inventory(
 
     if items:
         ws.append([
-            "JAMI", "", "", "",
+            "ЖАМИ", "", "", "",
             total_remaining_qty,
             format_money(total_remaining_value),
             "", "",
@@ -535,12 +535,12 @@ def export_customer_debts(
 
     wb = Workbook()
     ws = wb.active
-    ws.title = "Qarzdorlar"
+    ws.title = "Қарздорлар"
 
     headers = [
-        "Sana", "Mijoz", "Sotuv ID",
-        "Dastlabki qarz", "To'langan", "Qolgan qarz",
-        "Status", "Oxirgi to'lov sanasi",
+        "Сана", "Мижоз", "Сотув ID",
+        "Дастлабки қарз", "Тўланган", "Қолган қарз",
+        "Статус", "Охирги тўлов санаси",
     ]
     ws.append(headers)
     style_header_row(ws)
@@ -562,7 +562,7 @@ def export_customer_debts(
 
     if items:
         ws.append([
-            "JAMI", "", "",
+            "ЖАМИ", "", "",
             format_money(sum(d.original_amount for d in items)),
             format_money(sum(d.paid_amount for d in items)),
             format_money(sum(d.remaining_amount for d in items)),
@@ -595,12 +595,12 @@ def export_supplier_debts(
 
     wb = Workbook()
     ws = wb.active
-    ws.title = "Bizning qarzlar"
+    ws.title = "Бизнинг қарзлар"
 
     headers = [
-        "Sana", "Yetkazib beruvchi", "Prixod ID",
-        "Dastlabki qarz", "To'langan", "Qolgan qarz",
-        "Status", "Oxirgi to'lov sanasi",
+        "Сана", "Етказиб берувчи", "Приход ID",
+        "Дастлабки қарз", "Тўланган", "Қолган қарз",
+        "Статус", "Охирги тўлов санаси",
     ]
     ws.append(headers)
     style_header_row(ws)
@@ -622,7 +622,7 @@ def export_supplier_debts(
 
     if items:
         ws.append([
-            "JAMI", "", "",
+            "ЖАМИ", "", "",
             format_money(sum(d.original_amount for d in items)),
             format_money(sum(d.paid_amount for d in items)),
             format_money(sum(d.remaining_amount for d in items)),
@@ -664,9 +664,9 @@ def export_expenses(
 
     wb = Workbook()
     ws = wb.active
-    ws.title = "Xarajatlar"
+    ws.title = "Харажатлар"
 
-    headers = ["Sana", "Kategoriya", "Summa", "To'lov turi", "Status", "Izoh"]
+    headers = ["Сана", "Категория", "Сумма", "Тўлов тури", "Статус", "Изоҳ"]
     ws.append(headers)
     style_header_row(ws)
     ws.freeze_panes = "A2"
@@ -682,7 +682,7 @@ def export_expenses(
         ])
 
     if items:
-        ws.append(["JAMI", "", format_money(sum(e.amount for e in items)), "", "", ""])
+        ws.append(["ЖАМИ", "", format_money(sum(e.amount for e in items)), "", "", ""])
         for cell in ws[ws.max_row]:
             cell.font = SUMMARY_FONT
 
@@ -719,11 +719,11 @@ def export_money_movements(
 
     wb = Workbook()
     ws = wb.active
-    ws.title = "Pul harakati"
+    ws.title = "Пул ҳаракати"
 
     headers = [
-        "Sana", "Harakat turi", "To'lov turi",
-        "Yo'nalish", "Summa", "Bog'langan modul", "Izoh",
+        "Сана", "Ҳаракат тури", "Тўлов тури",
+        "Йўналиш", "Сумма", "Боғланган модул", "Изоҳ",
     ]
     ws.append(headers)
     style_header_row(ws)
@@ -748,15 +748,15 @@ def export_money_movements(
         ])
 
     if items:
-        ws.append(["JAMI KIRIM", "", "", "", format_money(total_in), "", ""])
+        ws.append(["ЖАМИ КИРИМ", "", "", "", format_money(total_in), "", ""])
         for cell in ws[ws.max_row]:
             cell.font = SUMMARY_FONT
 
-        ws.append(["JAMI CHIQIM", "", "", "", format_money(total_out), "", ""])
+        ws.append(["ЖАМИ ЧИҚИМ", "", "", "", format_money(total_out), "", ""])
         for cell in ws[ws.max_row]:
             cell.font = SUMMARY_FONT
 
-        ws.append(["JAMI BALANS", "", "", "", format_money(total_in - total_out), "", ""])
+        ws.append(["ЖАМИ БАЛАНС", "", "", "", format_money(total_in - total_out), "", ""])
         for cell in ws[ws.max_row]:
             cell.font = SUMMARY_FONT
 

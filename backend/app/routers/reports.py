@@ -1,5 +1,6 @@
 """Reports and Dashboard API router."""
 from datetime import date, datetime, timedelta
+from app.services.purchase_service import INITIAL_STOCK_SUPPLIER_NAMES
 from fastapi import APIRouter, Depends, Query
 from sqlalchemy.orm import Session
 from sqlalchemy import func
@@ -166,7 +167,7 @@ def get_report(
     # Expense breakdown by category
     expense_by_category = {}
     for e in expenses:
-        cat_name = e.category.name if e.category else "Boshqa"
+        cat_name = e.category.name if e.category else "Бошқа"
         expense_by_category[cat_name] = expense_by_category.get(cat_name, 0) + e.amount
 
     # Cash flow from money_movements
@@ -242,14 +243,14 @@ def get_daily_transactions(
     bank_out = 0
     
     MOVEMENT_LABELS = {
-        "initial_balance": "Boshlang'ich balans",
-        "purchase_payment": "Xarid to'lovi",
-        "sale_payment": "Sotuv to'lovi",
-        "customer_debt_payment": "Mijoz qarz to'lovi",
-        "supplier_debt_payment": "Yetkazuvchi qarz to'lovi",
-        "expense": "Xarajat",
-        "balance_adjustment": "Balans tuzatish",
-        "cancellation": "Bekor qilish",
+        "initial_balance": "Бошланғич баланс",
+        "purchase_payment": "Харид тўлови",
+        "sale_payment": "Сотув тўлови",
+        "customer_debt_payment": "Мижоз қарз тўлови",
+        "supplier_debt_payment": "Етказувчи қарз тўлови",
+        "expense": "Харажат",
+        "balance_adjustment": "Баланс тузатиш",
+        "cancellation": "Бекор қилиш",
     }
     
     for m in day_movements:
@@ -304,7 +305,7 @@ def get_daily_transactions(
             "product_name": product_name,
             "quantity": quantity,
             "amount": m.amount,
-            "payment_type": "Naqd" if m.payment_type == "cash" else "Perechisleniya",
+            "payment_type": "Нақд" if m.payment_type == "cash" else "Перечисления",
             "direction": m.direction,
             "note": m.note or "",
             "rich_note": get_rich_description(db, m),
@@ -321,7 +322,7 @@ def get_daily_transactions(
             "time": s.created_at.strftime("%H:%M:%S"),
             "date": s.date.strftime("%d.%m.%Y"),
             "type": "sale",
-            "title": "Sotuv (tovar chiqimi)",
+            "title": "Сотув (товар чиқими)",
             "partner_name": s.customer.name if s.customer else "—",
             "product_name": s.product.name if s.product else "—",
             "quantity": s.quantity_liters,
@@ -329,7 +330,7 @@ def get_daily_transactions(
             "payment_type": "—",
             "direction": "stock_only",
             "note": s.note or "",
-            "rich_note": "Sotuv (tovar chiqimi)",
+            "rich_note": "Сотув (товар чиқими)",
             "related_table": "sales",
             "related_id": s.id,
             "sort_time": s.created_at
@@ -339,14 +340,14 @@ def get_daily_transactions(
     purchases = db.query(Purchase).filter(Purchase.date == date_val, Purchase.status == "active").all()
     for p in purchases:
         partner_name = p.supplier.name if p.supplier else "—"
-        is_initial_stock = (partner_name == "O'zimiz (Boshlang'ich qoldiq)")
+        is_initial_stock = (partner_name in INITIAL_STOCK_SUPPLIER_NAMES)
         
         transactions.append({
             "id": p.id,
             "time": p.created_at.strftime("%H:%M:%S"),
             "date": p.date.strftime("%d.%m.%Y"),
             "type": "initial_stock" if is_initial_stock else "purchase",
-            "title": "Boshlang'ich qoldiq kiritish" if is_initial_stock else "Prixod (tovar kirimi)",
+            "title": "Бошланғич қолдиқ киритиш" if is_initial_stock else "Приход (товар кирими)",
             "partner_name": partner_name,
             "product_name": p.product.name if p.product else "—",
             "quantity": p.quantity_liters,
@@ -354,7 +355,7 @@ def get_daily_transactions(
             "payment_type": "—",
             "direction": "stock_only",
             "note": p.note or "",
-            "rich_note": "Boshlang'ich qoldiq kiritish" if is_initial_stock else "Prixod (tovar kirimi)",
+            "rich_note": "Бошланғич қолдиқ киритиш" if is_initial_stock else "Приход (товар кирими)",
             "related_table": "purchases",
             "related_id": p.id,
             "sort_time": p.created_at

@@ -1,5 +1,10 @@
 """Shared test fixtures — in-memory SQLite database and test client."""
 
+import os
+
+# Testlar haqiqiy bazaga (natural_oil.db) TEGMASLIGI uchun — import'lardan OLDIN
+os.environ["DATABASE_URL"] = "sqlite://"
+
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine, event
@@ -10,6 +15,7 @@ from app.database import Base, get_db
 from app.main import app
 from app.models import *  # noqa: F401,F403 — register all models
 from app.seed import seed_database
+from app.config import settings
 
 
 # In-memory SQLite for tests
@@ -64,8 +70,8 @@ def client(db_session):
 def admin_token(client) -> str:
     """Login as admin and return JWT token."""
     response = client.post("/api/auth/login", json={
-        "phone": "+998901234567",
-        "password": "admin123",
+        "phone": settings.MAIN_USER_LOGIN,
+        "password": settings.MAIN_USER_PASSWORD,
     })
     assert response.status_code == 200
     return response.json()["access_token"]

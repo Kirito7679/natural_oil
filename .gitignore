@@ -44,3 +44,6 @@ desktop.ini
 # ===== Backups =====
 *.zip
 backups/
+# cloudflared (ONLAYN_HAVOLA.bat yuklab oladi)
+tools/
+*.db.backup-*

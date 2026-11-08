@@ -26,8 +26,8 @@ def get_rich_description(db: Session, m: MoneyMovement) -> str:
             if debt:
                 partner_name = debt.customer.name if debt.customer else None
 
-        name = partner_name or "Noma'lum hamkor"
-        return f"Mijozdan qarz to'lovi \u2014 {name}"
+        name = partner_name or "Номаълум ҳамкор"
+        return f"Мижоздан қарз тўлови \u2014 {name}"
 
     elif m.movement_type == "supplier_debt_payment":
         partner_name = None
@@ -46,45 +46,45 @@ def get_rich_description(db: Session, m: MoneyMovement) -> str:
             if debt:
                 partner_name = debt.supplier.name if debt.supplier else None
 
-        name = partner_name or "Noma'lum hamkor"
-        return f"Yetkazib beruvchiga qarz to'lovi \u2014 {name}"
+        name = partner_name or "Номаълум ҳамкор"
+        return f"Етказиб берувчига қарз тўлови \u2014 {name}"
 
     elif m.movement_type == "sale_payment":
         if m.related_table == "sales" and m.related_id:
             sale = db.query(Sale).filter(Sale.id == m.related_id).first()
             if sale:
-                partner_name = sale.customer.name if sale.customer else "Noma'lum hamkor"
-                product_name = sale.product.name if sale.product else "Noma'lum mahsulot"
-                return f"Sotuv to'lovi — {partner_name} — {product_name}"
-        return "Sotuv to'lovi — Noma'lum hamkor"
+                partner_name = sale.customer.name if sale.customer else "Номаълум ҳамкор"
+                product_name = sale.product.name if sale.product else "Номаълум маҳсулот"
+                return f"Сотув тўлови — {partner_name} — {product_name}"
+        return "Сотув тўлови — Номаълум ҳамкор"
 
     elif m.movement_type == "purchase_payment":
         if m.related_table == "purchases" and m.related_id:
             purchase = db.query(Purchase).filter(Purchase.id == m.related_id).first()
             if purchase:
-                partner_name = purchase.supplier.name if purchase.supplier else "Noma'lum hamkor"
-                product_name = purchase.product.name if purchase.product else "Noma'lum mahsulot"
-                return f"Prixod to'lovi — {partner_name} — {product_name}"
-        return "Prixod to'lovi — Noma'lum hamkor"
+                partner_name = purchase.supplier.name if purchase.supplier else "Номаълум ҳамкор"
+                product_name = purchase.product.name if purchase.product else "Номаълум маҳсулот"
+                return f"Приход тўлови — {partner_name} — {product_name}"
+        return "Приход тўлови — Номаълум ҳамкор"
 
     elif m.movement_type == "expense":
         if m.related_table == "expenses" and m.related_id:
             expense = db.query(Expense).filter(Expense.id == m.related_id).first()
             if expense:
-                cat_name = expense.category.name if expense.category else "Boshqa"
+                cat_name = expense.category.name if expense.category else "Бошқа"
                 if note:
-                    return f"Xarajat — {cat_name} — {note}"
-                return f"Xarajat — {cat_name}"
-        return f"Xarajat — {note}" if note else "Xarajat"
+                    return f"Харажат — {cat_name} — {note}"
+                return f"Харажат — {cat_name}"
+        return f"Харажат — {note}" if note else "Харажат"
 
     elif m.movement_type == "initial_balance":
-        payment_type_str = "Naqd" if m.payment_type == "cash" else "Perechisleniya"
-        return f"O'zida bor pul qo'shildi — {payment_type_str}"
+        payment_type_str = "Нақд" if m.payment_type == "cash" else "Перечисления"
+        return f"Ўзида бор пул қўшилди — {payment_type_str}"
 
     elif m.movement_type == "balance_adjustment":
-        payment_type_str = "Naqd" if m.payment_type == "cash" else "Perechisleniya"
+        payment_type_str = "Нақд" if m.payment_type == "cash" else "Перечисления"
         if note:
-            return f"Balans tuzatildi — {payment_type_str} — {note}"
-        return f"Balans tuzatildi — {payment_type_str}"
+            return f"Баланс тузатилди — {payment_type_str} — {note}"
+        return f"Баланс тузатилди — {payment_type_str}"
 
     return note

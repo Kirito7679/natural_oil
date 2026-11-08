@@ -131,7 +131,7 @@ class TestSales:
         }, headers=admin_headers)
         
         assert resp.status_code == 400
-        assert "yetarli mahsulot yo'q" in resp.json()["detail"]
+        assert "етарли маҳсулот йўқ" in resp.json()["detail"]
 
     def test_batch_finished_status(self, client, admin_headers, db_session):
         pid, cid, bid = self._create_dependencies(client, admin_headers)
@@ -166,7 +166,7 @@ class TestSales:
             "payments": []
         }, headers=admin_headers)
         assert resp2.status_code == 400
-        assert "tugagan" in resp2.json()["detail"]
+        assert "тугаган" in resp2.json()["detail"]
 
     def test_cancel_sale(self, client, admin_headers, db_session):
         pid, cid, bid = self._create_dependencies(client, admin_headers)

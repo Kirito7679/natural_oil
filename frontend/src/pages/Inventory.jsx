@@ -46,7 +46,7 @@ export default function Inventory() {
   return (
     <div className="page">
       <div className="page-header">
-        <h1 className="page-title">Ombor qoldig'i</h1>
+        <h1 className="page-title">Омбор қолдиғи</h1>
         <button
           className="btn btn-secondary"
           onClick={() => downloadExcel('inventory', {}, 'natural_oil_inventory.xlsx')}
@@ -58,33 +58,33 @@ export default function Inventory() {
       {/* Summary Stats */}
       <div className="stat-grid">
         <div className="stat-card stat-card--info">
-          <div className="stat-card-label">Jami mahsulot hajmi (Litr)</div>
-          <div className="stat-card-value">{formatNumber(totalLiters)} L</div>
+          <div className="stat-card-label">Жами маҳсулот ҳажми (Литр)</div>
+          <div className="stat-card-value">{formatNumber(totalLiters)} Л</div>
         </div>
         <div className="stat-card stat-card--success">
-          <div className="stat-card-label">Jami ombor qiymati (UZS)</div>
+          <div className="stat-card-label">Жами омбор қиймати (UZS)</div>
           <div className="stat-card-value">{formatCurrency(totalValue)}</div>
         </div>
       </div>
 
       {/* Summary Table */}
       <div className="card" style={{ marginBottom: '32px' }}>
-        <h2 className="card-title">Mahsulotlar bo'yicha qoldiq</h2>
+        <h2 className="card-title">Маҳсулотлар бўйича қолдиқ</h2>
         <div className="table-wrapper">
           <table className="data-table">
             <thead>
               <tr>
-                <th>Mahsulot</th>
-                <th className="text-right">Umumiy miqdor (L)</th>
-                <th className="text-right">O'rtacha narx (UZS)</th>
-                <th className="text-right">Umumiy qiymat (UZS)</th>
+                <th>Маҳсулот</th>
+                <th className="text-right">Умумий миқдор (Л)</th>
+                <th className="text-right">Ўртача нарх (UZS)</th>
+                <th className="text-right">Умумий қиймат (UZS)</th>
               </tr>
             </thead>
             <tbody>
               {summary.length === 0 ? (
                 <tr>
                   <td colSpan={4}>
-                    <p className="empty-message">Omborda mahsulot yo'q</p>
+                    <p className="empty-message">Омборда маҳсулот йўқ</p>
                   </td>
                 </tr>
               ) : (
@@ -103,18 +103,18 @@ export default function Inventory() {
       </div>
 
       <div className="page-header">
-        <h2 className="card-title" style={{ marginBottom: 0 }}>Partiyalar (Batch) tarixi</h2>
+        <h2 className="card-title" style={{ marginBottom: 0 }}>Партиялар тарихи</h2>
 
         <div className="filter-group" style={{ background: 'var(--bg-card)', padding: '8px 16px', borderRadius: '8px', border: '1px solid var(--border-color)' }}>
-          <label style={{ marginBottom: 0 }}>Holat:</label>
+          <label style={{ marginBottom: 0 }}>Ҳолат:</label>
           <select
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value)}
             style={{ border: 'none', background: 'transparent' }}
           >
-            <option value="">Barchasi</option>
-            <option value="active">Faol</option>
-            <option value="finished">Tugagan</option>
+            <option value="">Барчаси</option>
+            <option value="active">Фаол</option>
+            <option value="finished">Тугаган</option>
           </select>
         </div>
       </div>
@@ -125,21 +125,21 @@ export default function Inventory() {
           <table className="data-table">
             <thead>
               <tr>
-                <th>Sana</th>
-                <th>Mahsulot</th>
-                <th>Yetkazib beruvchi</th>
-                <th className="text-right">Narx (UZS)</th>
-                <th className="text-right">Dastlabki (L)</th>
-                <th className="text-right">Qoldiq (L)</th>
-                <th className="text-right">Qoldiq qiymati</th>
-                <th>Holat</th>
+                <th>Сана</th>
+                <th>Маҳсулот</th>
+                <th>Етказиб берувчи</th>
+                <th className="text-right">Нарх (UZS)</th>
+                <th className="text-right">Дастлабки (Л)</th>
+                <th className="text-right">Қолдиқ (Л)</th>
+                <th className="text-right">Қолдиқ қиймати</th>
+                <th>Ҳолат</th>
               </tr>
             </thead>
             <tbody>
               {batches.length === 0 ? (
                 <tr>
                   <td colSpan={8}>
-                    <p className="empty-message">Partiyalar topilmadi</p>
+                    <p className="empty-message">Партиялар топилмади</p>
                   </td>
                 </tr>
               ) : (
@@ -156,7 +156,7 @@ export default function Inventory() {
                     </td>
                     <td>
                       <span className={`badge badge--${b.status === 'active' ? 'active' : 'closed'}`}>
-                        {b.status === 'active' ? 'Faol' : 'Tugagan'}
+                        {b.status === 'active' ? 'Фаол' : 'Тугаган'}
                       </span>
                     </td>
                   </tr>

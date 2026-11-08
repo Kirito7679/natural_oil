@@ -1,33 +1,45 @@
 /* ===== Natural Oil ERP — Premium Light Design (Steps 1+2+3+4+5) ===== */
 
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* ===== Shrift: Onest (kirill uchun yaratilgan, lokal) ===== */
+@font-face { font-family: 'Onest'; font-style: normal; font-display: swap; font-weight: 100 900;
+  src: url('/fonts/onest-latin-wght-normal.woff2') format('woff2-variations');
+  unicode-range: U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD; }
+@font-face { font-family: 'Onest'; font-style: normal; font-display: swap; font-weight: 100 900;
+  src: url('/fonts/onest-latin-ext-wght-normal.woff2') format('woff2-variations');
+  unicode-range: U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF; }
+@font-face { font-family: 'Onest'; font-style: normal; font-display: swap; font-weight: 100 900;
+  src: url('/fonts/onest-cyrillic-wght-normal.woff2') format('woff2-variations');
+  unicode-range: U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116; }
+@font-face { font-family: 'Onest'; font-style: normal; font-display: swap; font-weight: 100 900;
+  src: url('/fonts/onest-cyrillic-ext-wght-normal.woff2') format('woff2-variations');
+  unicode-range: U+0460-052F,U+1C80-1C8A,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F; }
 
 /* ===== CSS VARIABLES ===== */
 :root {
-  --bg-primary: #F4F6FA;
-  --bg-secondary: #EEF1F7;
+  --bg-primary: #F6F5F1;
+  --bg-secondary: #EFEDE6;
   --bg-card: #FFFFFF;
-  --bg-card-hover: #FAFBFD;
-  --bg-sidebar: #FFFFFF;
+  --bg-card-hover: #FBFAF7;
+  --bg-sidebar: #0B0B0B;
   --bg-input: #FFFFFF;
-  --bg-overlay: rgba(15, 23, 42, 0.5);
-  --bg-row-hover: #F8FAFC;
-  --bg-section: #F8FAFC;
+  --bg-overlay: rgba(11, 11, 11, 0.55);
+  --bg-row-hover: #FFF9E8;
+  --bg-section: #FAF9F5;
 
-  --text-primary: #0F1B3D;
-  --text-secondary: #5B6478;
-  --text-muted: #9AA1B3;
-  --text-on-accent: #FFFFFF;
+  --text-primary: #111111;
+  --text-secondary: #55524B;
+  --text-muted: #98948A;
+  --text-on-accent: #0B0B0B;
 
-  --accent: #F5A623;
-  --accent-hover: #E89510;
-  --accent-soft: rgba(245, 166, 35, 0.10);
-  --accent-border: rgba(245, 166, 35, 0.30);
-  --accent-glow: rgba(245, 166, 35, 0.25);
-  --accent-gradient: linear-gradient(135deg, #F5A623 0%, #FFC966 100%);
+  --accent: #FBB805;
+  --accent-hover: #E8A800;
+  --accent-soft: rgba(251, 184, 5, 0.14);
+  --accent-border: rgba(251, 184, 5, 0.45);
+  --accent-glow: rgba(251, 184, 5, 0.30);
+  --accent-gradient: linear-gradient(135deg, #FBB805 0%, #FFCB2E 100%);
 
-  --success: #10B981;
+  --success: #0E9F6E;
   --success-soft: rgba(16, 185, 129, 0.10);
   --success-border: rgba(16, 185, 129, 0.25);
   --success-gradient: linear-gradient(135deg, #10B981 0%, #34D399 100%);
@@ -40,23 +52,23 @@
   --warning-soft: rgba(245, 158, 11, 0.10);
   --warning-border: rgba(245, 158, 11, 0.25);
 
-  --info: #3B82F6;
+  --info: #2F5BD3;
   --info-soft: rgba(59, 130, 246, 0.10);
   --info-border: rgba(59, 130, 246, 0.25);
 
   --purple: #6366F1;
   --purple-soft: rgba(99, 102, 241, 0.10);
 
-  --border: #E5E8EF;
-  --border-strong: #D1D5DB;
-  --border-light: #F0F2F7;
+  --border: #E7E4DC;
+  --border-strong: #CFCBC0;
+  --border-light: #F1EFE9;
   --shadow-sm: 0 1px 2px rgba(15, 23, 42, 0.04);
   --shadow-md: 0 4px 12px rgba(15, 23, 42, 0.06);
   --shadow-lg: 0 12px 32px rgba(15, 23, 42, 0.08);
   --shadow-xl: 0 24px 60px rgba(15, 23, 42, 0.16);
   --shadow-card: 0 2px 8px rgba(15, 23, 42, 0.04);
 
-  --login-bg: linear-gradient(135deg, #FEF3D6 0%, #F4F6FA 50%, #E0E9FF 100%);
+  --login-bg: #0B0B0B;
 
   --sidebar-width: 264px;
   --radius-sm: 10px;
@@ -66,7 +78,7 @@
   --transition: 0.2s ease;
   --transition-slow: 0.35s ease;
 
-  font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  font-family: 'Onest', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
 }
 
 /* ===== RESET ===== */
@@ -1318,52 +1330,520 @@ button {
   margin-bottom: 18px;
 }
 
-/* ===== Responsive ===== */
-@media (max-width: 768px) {
-  .sidebar {
-    width: 64px;
-    overflow: hidden;
-  }
-
-  .sidebar-link span:last-child,
-  .sidebar-header,
-  .sidebar-footer .sidebar-user,
-  .sidebar-section-label,
-  .sidebar-logout span {
-    display: none;
-  }
-
-  .sidebar-link {
-    justify-content: center;
-    padding: 12px;
-  }
-
-  .app-content {
-    margin-left: 64px;
-    padding: 18px;
-  }
-
-  .stat-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .form-row {
-    grid-template-columns: 1fr;
-  }
-
-  .modal,
-  .modal-content {
-    max-width: 100%;
-  }
-
-  .modal-header,
-  .modal-body,
-  .modal-footer {
-    padding-left: 18px;
-    padding-right: 18px;
-  }
-
-  .payment-pills {
-    flex-direction: column;
-  }
+/* =====================================================================
+   NOP BRAND LAYER — Natural Oil Products (qora · sariq · oq)
+   Asosiy ranglar logodan olingan: #0B0B0B (neft qorasi), #FBB805 (tomchi sarig'i)
+   ===================================================================== */
+:root {
+  --brand-black: #0B0B0B;
+  --brand-ink: #1A1A1A;
+  --brand-yellow: #FBB805;
+  --brand-yellow-deep: #E8A800;
+  --sidebar-text: #B9B5AB;
+  --sidebar-text-strong: #FFFFFF;
+  --sidebar-line: rgba(255, 255, 255, 0.08);
+  --font-display: 'Onest', sans-serif;
 }
+
+.page-title,
+.login-logo,
+.sidebar-logo,
+.modal-header h2 {
+  font-family: var(--font-display);
+  letter-spacing: -0.02em;
+}
+
+.page-title { font-weight: 800; font-size: 28px; }
+
+/* ---- Sidebar: qora panel, sariq aktiv holat ---- */
+.sidebar {
+  background: var(--brand-black);
+  border-right: none;
+  background-image: radial-gradient(120% 40% at 0% 0%, rgba(251, 184, 5, 0.10) 0%, transparent 60%);
+}
+.sidebar-header { border-bottom: 1px solid var(--sidebar-line); padding: 24px 20px 20px; }
+.sidebar-logo-icon {
+  width: 44px; height: 44px; border-radius: 12px;
+  background: var(--brand-yellow);
+  box-shadow: 0 6px 18px rgba(251, 184, 5, 0.28);
+}
+.sidebar-logo-icon img { width: 30px; height: 30px; object-fit: contain; }
+.sidebar-logo { color: var(--sidebar-text-strong); font-size: 17px; font-weight: 800; }
+.sidebar-subtitle { color: var(--brand-yellow); opacity: 0.9; }
+.sidebar-section-label { color: #6F6B62; }
+.sidebar-link { color: var(--sidebar-text); }
+.sidebar-link:hover { background: rgba(255, 255, 255, 0.06); color: var(--sidebar-text-strong); }
+.sidebar-link--active,
+.sidebar-link--active:hover {
+  background: var(--brand-yellow);
+  color: var(--brand-black);
+  font-weight: 800;
+  box-shadow: 0 6px 16px rgba(251, 184, 5, 0.22);
+}
+.sidebar-link--active::before { display: none; }
+.sidebar-nav::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.12); }
+.sidebar-footer { border-top: 1px solid var(--sidebar-line); }
+.sidebar-user {
+  flex-direction: row; align-items: center; gap: 10px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--sidebar-line);
+}
+.sidebar-user-avatar {
+  width: 32px; height: 32px; border-radius: 50%;
+  background: var(--brand-yellow); color: var(--brand-black);
+  display: flex; align-items: center; justify-content: center;
+  font-weight: 800; font-size: 13px; flex-shrink: 0;
+}
+.sidebar-user-info { display: flex; flex-direction: column; min-width: 0; }
+.sidebar-user-name { color: var(--sidebar-text-strong); }
+.sidebar-user-role { color: #8A867C; }
+.sidebar-logout { border-color: var(--sidebar-line); color: var(--sidebar-text); }
+.sidebar-logout:hover { background: rgba(239, 68, 68, 0.14); border-color: rgba(239, 68, 68, 0.4); color: #FF8A8A; }
+
+/* ---- Tugmalar: sariq + qora matn ---- */
+.btn--primary,
+.btn-primary {
+  background: var(--brand-yellow);
+  color: var(--brand-black);
+  font-weight: 800;
+  box-shadow: 0 4px 0 var(--brand-yellow-deep), 0 8px 18px rgba(251, 184, 5, 0.25);
+}
+.btn--primary:hover:not(:disabled),
+.btn-primary:hover:not(:disabled) {
+  filter: none;
+  background: #FFC21F;
+  transform: translateY(-1px);
+  box-shadow: 0 5px 0 var(--brand-yellow-deep), 0 10px 22px rgba(251, 184, 5, 0.3);
+}
+.btn--primary:active:not(:disabled),
+.btn-primary:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow: 0 2px 0 var(--brand-yellow-deep);
+}
+.btn--secondary,
+.btn-secondary { color: var(--text-primary); border-color: var(--border-strong); }
+.btn--secondary:hover:not(:disabled),
+.btn-secondary:hover:not(:disabled) { background: var(--brand-black); color: #fff; border-color: var(--brand-black); }
+
+/* ---- Kartalar ---- */
+.card, .stat-card { border-color: var(--border); box-shadow: 0 1px 0 rgba(11, 11, 11, 0.03), 0 6px 18px rgba(11, 11, 11, 0.04); }
+.stat-card { border-radius: 16px; }
+.stat-card::after {
+  content: ''; position: absolute; left: 24px; right: 24px; bottom: 0; height: 3px;
+  border-radius: 3px 3px 0 0; background: var(--brand-yellow);
+  transform: scaleX(0); transform-origin: left; transition: transform 0.3s ease;
+}
+.stat-card:hover::after { transform: scaleX(1); }
+.stat-card-value { font-family: var(--font-display); font-size: 25px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.stat-card-label { color: #8A867C; }
+.stat-card-icon--accent, .stat-card-icon--warning { background: var(--accent-soft); color: #B98600; }
+.stat-card-icon--info { background: rgba(11, 11, 11, 0.06); color: var(--brand-black); }
+.stat-card-value--blue { color: var(--brand-black); }
+.stat-card-value--gold { color: #B98600; }
+
+/* Umumiy balans — qora "hero" karta */
+.stat-card--hero {
+  background: var(--brand-black);
+  border-color: var(--brand-black);
+  color: #fff;
+  overflow: hidden;
+  background-image:
+    radial-gradient(140px 140px at 100% 0%, rgba(251, 184, 5, 0.35) 0%, transparent 70%),
+    linear-gradient(180deg, #151515 0%, #0B0B0B 100%);
+}
+.stat-card--hero .stat-card-icon { background: var(--brand-yellow); color: var(--brand-black); }
+.stat-card--hero .stat-card-label { color: rgba(255, 255, 255, 0.6); }
+.stat-card--hero .stat-card-value { color: var(--brand-yellow); font-size: 28px; }
+.stat-card--hero .stat-card-value--red { color: #FF7A7A; }
+.stat-card--hero .stat-card-sub { color: rgba(255, 255, 255, 0.5); }
+
+.section-label { color: var(--text-primary); opacity: 0.55; }
+.section-label::before {
+  content: ''; display: inline-block; width: 14px; height: 3px; border-radius: 2px;
+  background: var(--brand-yellow); vertical-align: middle; margin-right: 8px; position: relative; top: -2px;
+}
+
+/* ---- Jadvallar ---- */
+.data-table th { color: #6F6B62; background: var(--bg-section); }
+.data-table thead th:first-child { border-top-left-radius: 10px; }
+.data-table thead th:last-child { border-top-right-radius: 10px; }
+.data-table td { font-variant-numeric: tabular-nums; }
+.data-table tbody tr:hover { background: var(--bg-row-hover); box-shadow: inset 3px 0 0 var(--brand-yellow); }
+
+/* ---- Badge ---- */
+.badge--type-customer { background: rgba(11, 11, 11, 0.07); color: var(--brand-black); }
+.badge--type-supplier { background: var(--accent-soft); color: #8F6800; }
+
+/* ---- Formalar ---- */
+input:focus, select:focus, textarea:focus { border-color: var(--brand-yellow) !important; box-shadow: 0 0 0 4px rgba(251, 184, 5, 0.18) !important; }
+
+/* ---- Login: qora brend paneli + oq karta ---- */
+.login-container {
+  background: var(--brand-black);
+  display: grid; grid-template-columns: 1.1fr 1fr; gap: 0; padding: 0;
+}
+.login-container::before { display: none; }
+.login-brand-panel {
+  position: relative; z-index: 1; padding: 64px;
+  display: flex; flex-direction: column; justify-content: flex-end; min-height: 100vh;
+  color: #fff;
+  background: radial-gradient(70% 60% at 15% 100%, rgba(251, 184, 5, 0.20) 0%, transparent 70%);
+}
+.login-brand-drop {
+  position: absolute; top: 64px; left: 64px; width: 72px; height: 72px; border-radius: 18px;
+  background: var(--brand-yellow) url('/brand/logo-mark.png') center / 48px no-repeat;
+  box-shadow: 0 10px 30px rgba(251, 184, 5, 0.35);
+}
+.login-brand-kicker { color: var(--brand-yellow); font-weight: 800; font-size: 12px; letter-spacing: 0.18em; text-transform: uppercase; }
+.login-brand-text h2 { font-family: var(--font-display); font-size: 44px; line-height: 1.08; font-weight: 900; margin: 14px 0 16px; max-width: 520px; letter-spacing: -0.03em; }
+.login-brand-text p { color: rgba(255, 255, 255, 0.6); font-size: 15px; max-width: 420px; }
+.login-container > .login-card {
+  justify-self: center; align-self: center; margin: 32px; border: none;
+  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.45);
+}
+.login-logo-img { width: 210px; height: auto; display: block; margin: 0 auto 14px; }
+.login-header { margin-bottom: 28px; }
+
+@media (max-width: 900px) {
+  .login-container { grid-template-columns: 1fr; }
+  .login-brand-panel { display: none; }
+}
+
+
+/* =====================================================================
+   TIPOGRAFIKA — kattaroq, o'qilishi oson, premium
+   ===================================================================== */
+body { font-size: 15px; font-weight: 500; letter-spacing: -0.005em; line-height: 1.55; }
+input, select, textarea, button { font-family: inherit; }
+
+.page { max-width: 1400px; }
+.page-title { font-size: 32px; font-weight: 700; letter-spacing: -0.035em; }
+.card-title, .modal-header h2 { font-family: var(--font-display); font-size: 19px; font-weight: 700; letter-spacing: -0.02em; }
+
+.sidebar-logo { font-family: var(--font-display); font-size: 18px; font-weight: 700; }
+.sidebar-subtitle { font-size: 10.5px; }
+.sidebar-section-label { font-size: 11px; letter-spacing: 0.16em; }
+.sidebar-link { font-size: 15px; font-weight: 600; padding: 12px 14px; gap: 13px; }
+.sidebar-link--active, .sidebar-link--active:hover { font-weight: 700; }
+.sidebar-user-name { font-size: 14px; }
+.sidebar-user-role { font-size: 12px; }
+.sidebar-logout { font-size: 13.5px; }
+
+.btn { font-size: 14.5px; font-weight: 700; padding: 12px 22px; }
+.btn--sm { font-size: 13px; padding: 8px 14px; }
+
+.stat-card { padding: 24px 26px; }
+.stat-card-label { font-size: 12px; letter-spacing: 0.09em; font-weight: 700; }
+.stat-card-value { font-family: var(--font-display); font-size: 29px; font-weight: 700; letter-spacing: -0.035em; }
+.stat-card--hero .stat-card-value { font-size: 33px; }
+.stat-card-sub { font-size: 13px; }
+.section-label { font-size: 12px; letter-spacing: 0.14em; font-weight: 800; }
+
+.data-table th { font-size: 12px; letter-spacing: 0.07em; padding: 15px 16px; }
+.data-table td { font-size: 14.5px; padding: 15px 16px; }
+.badge { font-size: 12px; padding: 5px 12px; }
+
+.form-group label { font-size: 13px; }
+.form-group input, .form-group select, .form-group textarea,
+.login-form input { font-size: 15px; }
+
+.login-subtitle { font-size: 12.5px; }
+.login-brand-text h2 { font-size: 48px; font-weight: 700; letter-spacing: -0.04em; }
+.login-brand-text p { font-size: 16.5px; }
+
+/* Jadval: qatorlar bo'linmasin, sig'masa gorizontal scroll */
+.data-table td { white-space: nowrap; padding: 15px 14px; }
+.data-table th { padding: 14px 14px; }
+.sidebar-link { padding: 10px 14px; }
+.sidebar-nav { padding-top: 14px; }
+
+/* Menyu — kattaroq shrift va ikonlar */
+:root { --sidebar-width: 290px; }
+.sidebar-logo { font-size: 21px; }
+.sidebar-subtitle { font-size: 11.5px; }
+.sidebar-logo-icon { width: 50px; height: 50px; }
+.sidebar-logo-icon img { width: 34px; height: 34px; }
+.sidebar-section-label { font-size: 12.5px; padding: 12px 14px 8px; }
+.sidebar-link { font-size: 17px; font-weight: 600; padding: 12px 16px; gap: 14px; margin-bottom: 3px; }
+.sidebar-link-icon { width: 22px; height: 22px; }
+.sidebar-link-icon svg { width: 21px; height: 21px; }
+.sidebar-user-name { font-size: 15.5px; }
+.sidebar-user-role { font-size: 13px; }
+.sidebar-user-avatar { width: 36px; height: 36px; font-size: 15px; }
+.sidebar-logout { font-size: 15px; padding: 11px 12px; }
+
+/* Onest uchun sarlavha og'irliklari */
+.page-title { font-weight: 800; letter-spacing: -0.03em; }
+.stat-card-value { font-weight: 800; letter-spacing: -0.03em; }
+.sidebar-logo { font-weight: 800; }
+.login-brand-text h2 { font-weight: 800; }
+
+/* =====================================================================
+   ҲИСОБОТ — таблар, фильтр, KPI
+   ===================================================================== */
+.report-filter { display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap; padding: 16px 20px; }
+.report-presets { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.chip {
+  border: 1px solid var(--border-strong); background: var(--bg-card); color: var(--text-primary);
+  padding: 8px 16px; border-radius: 999px; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer;
+  transition: all var(--transition);
+}
+.chip:hover { border-color: var(--brand-black); }
+.chip--active, .chip--active:hover { background: var(--brand-black); border-color: var(--brand-black); color: var(--brand-yellow); }
+.chip-sep { width: 1px; height: 24px; background: var(--border-strong); margin: 0 6px; }
+.report-dates { display: flex; gap: 12px; }
+.report-dates label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em; }
+.report-dates input { padding: 9px 12px; border: 1px solid var(--border-strong); border-radius: 10px; font: inherit; font-size: 15px; background: var(--bg-input); color: var(--text-primary); }
+
+.report-section-title { font-family: var(--font-display); font-size: 20px; font-weight: 800; letter-spacing: -0.02em; margin: 8px 0 12px; }
+.report-tabs { display: flex; gap: 6px; flex-wrap: wrap; padding: 10px; }
+.report-tab {
+  display: inline-flex; align-items: center; gap: 8px; border: none; background: transparent; color: var(--text-secondary);
+  padding: 11px 18px; border-radius: 12px; font: inherit; font-size: 15.5px; font-weight: 700; cursor: pointer; transition: all var(--transition);
+}
+.report-tab:hover { background: var(--bg-section); color: var(--text-primary); }
+.report-tab--active, .report-tab--active:hover { background: var(--brand-yellow); color: var(--brand-black); box-shadow: 0 6px 16px rgba(251, 184, 5, 0.25); }
+.report-subfilter { padding: 12px 16px; }
+.report-body { transition: opacity 0.2s; }
+.report-body--loading { opacity: 0.5; pointer-events: none; }
+
+.kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 20px; }
+.kpi { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 20px 22px; box-shadow: 0 1px 0 rgba(11,11,11,.03), 0 6px 18px rgba(11,11,11,.04); }
+.kpi-label { font-size: 12.5px; font-weight: 700; color: #8A867C; text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 8px; }
+.kpi-value { font-family: var(--font-display); font-size: 26px; font-weight: 800; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; color: var(--text-primary); }
+.kpi-value--green { color: var(--success); }
+.kpi-value--red { color: var(--danger); }
+.kpi-sub { font-size: 13px; color: var(--text-muted); margin-top: 6px; font-weight: 600; }
+.kpi--hero { background: var(--brand-black); border-color: var(--brand-black); background-image: radial-gradient(160px 120px at 100% 0%, rgba(251,184,5,.32) 0%, transparent 70%); }
+.kpi--hero .kpi-label { color: rgba(255,255,255,.6); }
+.kpi--hero .kpi-value { color: var(--brand-yellow); }
+.kpi--hero .kpi-value--red { color: #FF7A7A; }
+.kpi--hero .kpi-sub { color: rgba(255,255,255,.5); }
+
+.profit-formula { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; font-size: 15px; color: var(--text-secondary); }
+.profit-formula b { color: var(--text-primary); font-variant-numeric: tabular-nums; }
+.profit-formula i { font-style: normal; font-weight: 800; color: var(--brand-yellow-deep); font-size: 18px; }
+.profit-formula-result { background: var(--accent-soft); padding: 6px 12px; border-radius: 10px; }
+
+.cell-muted { color: var(--text-muted); font-size: 13.5px; white-space: normal; }
+.data-table tfoot td { font-weight: 800; border-top: 2px solid var(--border-strong); }
+.share-bar { display: flex; align-items: center; gap: 10px; min-width: 160px; }
+.share-bar span { display: block; height: 8px; border-radius: 99px; background: var(--brand-yellow); }
+.share-bar::before { content: ''; display: none; }
+.share-bar em { font-style: normal; font-weight: 700; font-size: 13px; color: var(--text-secondary); }
+.age-badge { display: inline-block; padding: 3px 10px; border-radius: 99px; font-size: 12.5px; font-weight: 700; background: var(--success-soft); color: var(--success); }
+.age-badge--mid { background: var(--warning-soft); color: #B07400; }
+.age-badge--old { background: var(--danger-soft); color: var(--danger); }
+.text-right { text-align: right; }
+.data-table td.text-success { color: var(--success); }
+.data-table td.text-danger { color: var(--danger); }
+.report-tab { padding: 10px 15px; }
+
+/* Investor: yozish tugmalari yashiriladi (backend ham bloklaydi) */
+.role-investor .write-action { display: none !important; }
+.role-select { padding: 7px 10px; border: 1px solid var(--border-strong); border-radius: 9px; font: inherit; font-size: 14px; background: var(--bg-input); color: var(--text-primary); }
+
+/* ---- Маҳсулот статистикаси ---- */
+.highlight-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; margin-bottom: 20px; }
+.highlight { background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px; padding: 20px 22px; position: relative; overflow: hidden; }
+.highlight::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 4px; }
+.highlight--gold::before { background: var(--brand-yellow); }
+.highlight--green::before { background: var(--success); }
+.highlight--gray::before { background: var(--border-strong); }
+.highlight--red::before { background: var(--danger); }
+.highlight-head { display: flex; align-items: center; gap: 10px; font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-secondary); }
+.highlight-icon { width: 32px; height: 32px; border-radius: 10px; display: inline-flex; align-items: center; justify-content: center; background: var(--bg-section); color: var(--text-primary); }
+.highlight--gold .highlight-icon { background: var(--brand-yellow); color: var(--brand-black); }
+.highlight-product { font-family: var(--font-display); font-size: 24px; font-weight: 800; margin-top: 14px; letter-spacing: -0.02em; }
+.highlight-metric { font-size: 17px; font-weight: 700; margin-top: 2px; font-variant-numeric: tabular-nums; }
+.highlight-sub { font-size: 13px; color: var(--text-muted); margin-top: 6px; font-weight: 600; }
+.highlight-empty { font-size: 13.5px; color: var(--text-muted); margin-top: 14px; }
+.alert--warning-soft { background: var(--accent-soft); border: 1px solid var(--accent-border); color: var(--text-primary); margin-bottom: 20px; }
+
+.chart-controls { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+.segmented { display: inline-flex; background: var(--bg-section); border: 1px solid var(--border); border-radius: 12px; padding: 3px; }
+.segmented button { border: none; background: transparent; padding: 8px 16px; border-radius: 9px; font: inherit; font-size: 14px; font-weight: 700; color: var(--text-secondary); cursor: pointer; }
+.segmented button.is-active { background: var(--brand-black); color: var(--brand-yellow); }
+.chart-title { font-weight: 700; font-size: 15px; margin-bottom: 10px; color: var(--text-primary); }
+.chart-box { position: relative; }
+.chart-box svg { width: 100%; height: 260px; display: block; }
+.chart-grid { stroke: var(--border); stroke-width: 1; vector-effect: non-scaling-stroke; }
+.chart-axis { stroke: var(--border-strong); stroke-width: 1; vector-effect: non-scaling-stroke; }
+.chart-bar { fill: var(--brand-ink); transition: fill 0.15s; }
+.chart-bar--neg { fill: var(--danger); }
+.chart-bar--hover { fill: var(--brand-yellow); }
+.chart-xlabels { display: flex; justify-content: space-between; font-size: 11.5px; color: var(--text-muted); margin-top: 6px; font-variant-numeric: tabular-nums; }
+.chart-xlabels span { flex: 1; text-align: center; white-space: nowrap; }
+.chart-tip {
+  position: absolute; top: 0; transform: translateX(-50%); pointer-events: none;
+  background: var(--brand-black); color: #fff; border-radius: 10px; padding: 8px 12px; font-size: 13px;
+  display: flex; flex-direction: column; gap: 2px; white-space: nowrap; box-shadow: 0 8px 20px rgba(0,0,0,.2);
+}
+.chart-tip b { color: var(--brand-yellow); font-size: 12px; }
+.growth { display: inline-flex; align-items: center; gap: 2px; font-weight: 700; font-size: 13.5px; }
+.growth--up { color: var(--success); }
+.growth--down { color: var(--danger); }
+.rank { display: inline-flex; width: 28px; height: 28px; border-radius: 8px; align-items: center; justify-content: center; background: var(--bg-section); font-weight: 800; }
+.data-table tbody tr:first-child .rank { background: var(--brand-yellow); color: var(--brand-black); }
+.report-note { font-size: 13px; color: var(--text-muted); margin: -8px 0 20px; }
+.share-track { display: block; width: 110px; height: 8px; border-radius: 99px; background: var(--bg-section); overflow: hidden; flex-shrink: 0; }
+.share-track span { height: 100%; }
+
+
+/* =====================================================================
+   MOSLASHUVCHAN DIZAYN — telefon, planshet, kichik noutbuk
+   ===================================================================== */
+.mobile-topbar, .sidebar-backdrop, .sidebar-close { display: none; }
+.app-content { min-width: 0; }
+.table-wrapper { -webkit-overflow-scrolling: touch; }
+
+/* Kichik noutbuk (1025–1280px) */
+@media (max-width: 1280px) {
+  :root { --sidebar-width: 250px; }
+  .sidebar-link { font-size: 15.5px; padding: 10px 14px; }
+  .app-content { padding: 26px 26px; }
+  .stat-card-value { font-size: 25px; }
+  .stat-card--hero .stat-card-value { font-size: 28px; }
+}
+
+/* Planshet va telefon: menyu chapdan chiqadigan panelga aylanadi */
+@media (max-width: 1024px) {
+  .mobile-topbar {
+    display: flex; align-items: center; gap: 12px;
+    position: sticky; top: 0; z-index: 90;
+    height: 60px; padding: 0 14px;
+    background: var(--brand-black); color: #fff;
+    box-shadow: 0 2px 12px rgba(0,0,0,.18);
+  }
+  .mobile-menu-btn {
+    width: 42px; height: 42px; border-radius: 12px; border: 1px solid rgba(255,255,255,.12);
+    background: rgba(255,255,255,.06); color: #fff; display: inline-flex; align-items: center; justify-content: center; cursor: pointer;
+  }
+  .mobile-brand { display: flex; align-items: center; gap: 10px; font-family: var(--font-display); font-weight: 800; font-size: 18px; }
+  .mobile-brand-icon { width: 34px; height: 34px; border-radius: 10px; background: var(--brand-yellow); display: inline-flex; align-items: center; justify-content: center; }
+  .mobile-brand-icon img { width: 22px; height: 22px; }
+  .mobile-role { margin-left: auto; font-size: 12px; font-weight: 800; color: var(--brand-yellow); text-transform: uppercase; letter-spacing: .08em; }
+
+  .app-layout { display: block; }
+  .sidebar {
+    width: min(86vw, 320px);
+    transform: translateX(-105%);
+    transition: transform .25s ease;
+    z-index: 200;
+    box-shadow: 10px 0 40px rgba(0,0,0,.35);
+  }
+  .menu-open .sidebar { transform: translateX(0); }
+  .sidebar-backdrop { display: block; position: fixed; inset: 0; background: rgba(0,0,0,.45); z-index: 150; opacity: 0; pointer-events: none; transition: opacity .25s; }
+  .menu-open .sidebar-backdrop { opacity: 1; pointer-events: auto; }
+  .sidebar-header { position: relative; }
+  .sidebar-close {
+    display: inline-flex; position: absolute; right: 14px; top: 50%; transform: translateY(-50%);
+    width: 38px; height: 38px; border-radius: 10px; align-items: center; justify-content: center;
+    border: 1px solid rgba(255,255,255,.12); background: transparent; color: #fff; cursor: pointer;
+  }
+  .sidebar-link { font-size: 16.5px; padding: 12px 16px; }
+
+  .app-content { margin-left: 0; padding: 22px 20px 40px; min-height: calc(100vh - 60px); }
+  .page-title { font-size: 26px; }
+}
+
+/* Telefon */
+@media (max-width: 640px) {
+  body { font-size: 15px; }
+  .app-content { padding: 16px 12px 40px; }
+  .page-header { flex-direction: column; align-items: stretch; gap: 12px; margin-bottom: 16px; }
+  .page-title { font-size: 24px; }
+  .page-header .action-buttons { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; }
+  .page-header .action-buttons .btn, .page-header > .btn { width: 100%; }
+  .btn { padding: 12px 16px; font-size: 14.5px; }
+
+  .card { padding: 16px 14px; border-radius: 14px; margin-bottom: 14px; }
+  .card-title { font-size: 17px; }
+  .stat-grid, .kpi-grid, .highlight-grid { grid-template-columns: 1fr; gap: 10px; margin-bottom: 14px; }
+  .stat-card, .kpi, .highlight { padding: 16px 16px; }
+  .stat-card-icon { width: 38px; height: 38px; margin-bottom: 10px; }
+  .stat-card-value, .kpi-value { font-size: 24px; }
+  .stat-card--hero .stat-card-value { font-size: 27px; }
+  .highlight-product { font-size: 21px; }
+  .section-label { margin: 16px 0 10px; }
+
+  /* Jadval → kartochkalar (ustun nomi har qatorda chapda) */
+  .table-wrapper { overflow: visible; }
+  .data-table, .data-table tbody, .data-table tfoot, .data-table tr, .data-table td { display: block; width: 100%; }
+  .data-table thead { display: none; }
+  .data-table tr {
+    border: 1px solid var(--border); border-radius: 14px; padding: 6px 14px; margin-bottom: 10px;
+    background: var(--bg-card); box-shadow: 0 1px 0 rgba(11,11,11,.03);
+  }
+  .data-table tbody tr:hover { box-shadow: 0 1px 0 rgba(11,11,11,.03); background: var(--bg-card); }
+  .data-table td {
+    display: flex; justify-content: space-between; align-items: center; gap: 14px;
+    padding: 8px 0 !important; border-bottom: 1px dashed var(--border-light) !important;
+    white-space: normal; text-align: right !important; font-size: 14.5px;
+  }
+  .data-table td:last-child { border-bottom: none !important; }
+  .data-table td::before {
+    content: attr(data-label); flex-shrink: 0; max-width: 48%;
+    font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: .05em; text-align: left;
+  }
+  .data-table td:first-child { font-size: 16px; font-weight: 800; }
+  .data-table td[data-label=""]::before { display: none; }
+  .data-table td[data-label=""] { justify-content: flex-end; }
+  .data-table td > .action-buttons { justify-content: flex-end; }
+  .data-table tfoot tr { background: var(--accent-soft); border-color: var(--accent-border); }
+  .data-table tfoot td { border-top: none; }
+
+  /* Modal: pastdan chiqadigan panel */
+  .modal-overlay { align-items: flex-end; padding: 0; }
+  .modal, .modal-content { max-width: 100% !important; width: 100%; max-height: 92vh; border-radius: 20px 20px 0 0; }
+  .modal-header, .modal-body, .modal-footer { padding-left: 16px; padding-right: 16px; }
+  .modal-footer { position: sticky; bottom: 0; background: var(--bg-card); }
+  .modal-footer .btn { flex: 1; }
+  .form-row { grid-template-columns: 1fr; gap: 0; }
+  input, select, textarea { font-size: 16px !important; } /* iPhone'da avtomatik kattalashtirmaslik uchun */
+  .payment-pills { flex-direction: column; }
+
+  /* Filtrlar va tablar */
+  .filter-bar { flex-direction: column; align-items: stretch; }
+  .report-filter { padding: 12px; flex-direction: column; align-items: stretch; }
+  .report-presets { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
+  .report-presets::-webkit-scrollbar { display: none; }
+  .chip { white-space: nowrap; padding: 8px 14px; }
+  .report-dates { display: grid; grid-template-columns: 1fr 1fr; }
+  .report-dates input { width: 100%; }
+  .report-tabs { flex-wrap: nowrap; overflow-x: auto; padding: 8px; scrollbar-width: none; position: sticky; top: 60px; z-index: 20; }
+  .report-tabs::-webkit-scrollbar { display: none; }
+  .report-tab { white-space: nowrap; font-size: 14.5px; padding: 10px 14px; }
+  .report-section-title { font-size: 18px; }
+  .chart-controls { flex-direction: column; }
+  .segmented { align-self: stretch; }
+  .segmented button { flex: 1; }
+  .chart-box svg { height: 200px; }
+  .chart-xlabels { font-size: 10.5px; }
+  .profit-formula { font-size: 14px; }
+  .share-track { width: 70px; }
+
+  /* Login */
+  .login-container > .login-card { margin: 16px; padding: 32px 22px; }
+  .login-logo-img { width: 170px; }
+}
+@media (max-width: 640px) {
+  .page-header .action-buttons .btn { white-space: normal; line-height: 1.25; min-height: 46px; height: auto; }
+  .report-dates label { min-width: 0; }
+  .report-dates input { min-width: 0; padding: 9px 8px; }
+  .modal-body .form-group input, .modal-body .form-group select { width: 100%; min-width: 0; }
+}
+@media (max-width: 640px) {
+  .report-dates { width: 100%; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .report-dates input { width: 100%; box-sizing: border-box; }
+}
+.kpi-value { font-size: clamp(20px, 1.7vw, 26px); }
+.stat-card-value { font-size: clamp(21px, 1.8vw, 29px); }
+
+/* Mijoz/yetkazib beruvchini joyida qo'shish */
+.partner-new { display: flex; flex-direction: column; gap: 8px; padding: 12px; border: 1.5px dashed var(--brand-yellow); border-radius: 12px; background: var(--accent-soft); }
+.partner-new-head { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 14px; }
+.partner-new-close { margin-left: auto; border: none; background: transparent; cursor: pointer; color: var(--text-secondary); display: inline-flex; padding: 4px; }
+.partner-new input { width: 100%; padding: 10px 12px; border: 1px solid var(--border-strong); border-radius: 10px; font: inherit; font-size: 15px; background: #fff; }
+.partner-new-error { color: var(--danger); font-size: 13px; font-weight: 600; }
+.partner-new .btn { align-self: flex-start; }

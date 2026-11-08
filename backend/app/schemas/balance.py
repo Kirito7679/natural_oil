@@ -19,7 +19,7 @@ class InitialBalanceRequest(BaseModel):
     @classmethod
     def must_be_non_negative(cls, v: float) -> float:
         if v < 0:
-            raise ValueError("Summa 0 dan kam bo'lmasligi kerak")
+            raise ValueError("Сумма 0 дан кам бўлмаслиги керак")
         return v
 
 
@@ -33,7 +33,7 @@ class AddInitialBalanceRequest(BaseModel):
     @classmethod
     def must_be_positive(cls, v: float) -> float:
         if v <= 0:
-            raise ValueError("Summa 0 dan katta bo'lishi kerak")
+            raise ValueError("Сумма 0 дан катта бўлиши керак")
         return v
 
 
@@ -47,5 +47,5 @@ class BalanceAdjustmentRequest(BaseModel):
     def validate_payment_type(cls, v: PaymentType) -> PaymentType:
         # Extra safety — only cash and bank_transfer allowed
         if v not in (PaymentType.CASH, PaymentType.BANK_TRANSFER):
-            raise ValueError("Faqat naqd yoki perechisleniya usuli mavjud")
+            raise ValueError("Фақат нақд ёки перечисления усули мавжуд")
         return v

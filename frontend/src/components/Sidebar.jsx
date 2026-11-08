@@ -15,61 +15,65 @@ import {
   TrendingUp,
   UserCog,
   LogOut,
-  Flame,
+  X,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
+import { canAccess, ROLE_LABELS } from '../utils/roles';
 
 const SECTIONS = [
   {
-    label: 'Asosiy',
+    label: 'Асосий',
     items: [
-      { to: '/', label: 'Bosh sahifa', icon: LayoutDashboard },
-      { to: '/products', label: 'Mahsulotlar', icon: Package },
-      { to: '/partners', label: 'Hamkorlar', icon: UsersIcon },
+      { to: '/', label: 'Бош саҳифа', icon: LayoutDashboard },
+      { to: '/products', label: 'Маҳсулотлар', icon: Package },
+      { to: '/partners', label: 'Ҳамкорлар', icon: UsersIcon },
     ],
   },
   {
-    label: 'Operatsiyalar',
+    label: 'Операциялар',
     items: [
-      { to: '/purchases', label: 'Prixod', icon: Download },
-      { to: '/sales', label: 'Sotuv', icon: Upload },
-      { to: '/inventory', label: 'Ombor', icon: Warehouse },
+      { to: '/purchases', label: 'Приход', icon: Download },
+      { to: '/sales', label: 'Сотув', icon: Upload },
+      { to: '/inventory', label: 'Омбор', icon: Warehouse },
     ],
   },
   {
-    label: 'Moliya',
+    label: 'Молия',
     items: [
-      { to: '/customer-debts', label: 'Qarzdorlar', icon: Wallet },
-      { to: '/supplier-debts', label: 'Bizning qarzlar', icon: Banknote },
-      { to: '/expenses', label: 'Xarajatlar', icon: Receipt },
+      { to: '/customer-debts', label: 'Қарздорлар', icon: Wallet },
+      { to: '/supplier-debts', label: 'Бизнинг қарзлар', icon: Banknote },
+      { to: '/expenses', label: 'Харажатлар', icon: Receipt },
     ],
   },
   {
-    label: 'Tizim',
+    label: 'Тизим',
     items: [
-      { to: '/reports', label: 'Hisobot', icon: TrendingUp },
-      { to: '/users', label: 'Foydalanuvchilar', icon: UserCog },
+      { to: '/reports', label: 'Ҳисобот', icon: TrendingUp },
+      { to: '/users', label: 'Фойдаланувчилар', icon: UserCog },
     ],
   },
 ];
 
-export default function Sidebar() {
+export default function Sidebar({ onClose }) {
   const { user, logout } = useAuth();
 
   return (
     <aside className="sidebar">
       <div className="sidebar-header">
         <div className="sidebar-logo-icon">
-          <Flame size={20} strokeWidth={2.4} />
+          <img src="/brand/logo-mark.png" alt="NOP" />
         </div>
+        <button className="sidebar-close" onClick={onClose} aria-label="Ёпиш"><X size={20} /></button>
         <div className="sidebar-brand">
           <span className="sidebar-logo">Natural Oil</span>
-          <span className="sidebar-subtitle">ERP Tizimi</span>
+          <span className="sidebar-subtitle">{user?.role === 'investor' ? 'Инвестор панели' : 'Products · ERP'}</span>
         </div>
       </div>
 
       <nav className="sidebar-nav">
-        {SECTIONS.map((section) => (
+        {SECTIONS.map((section) => ({ ...section, items: section.items.filter((i) => canAccess(user?.role, i.to)) }))
+          .filter((section) => section.items.length > 0)
+          .map((section) => (
           <div key={section.label}>
             <div className="sidebar-section-label">{section.label}</div>
             {section.items.map((item) => {
@@ -96,14 +100,17 @@ export default function Sidebar() {
 
       <div className="sidebar-footer">
         <div className="sidebar-user">
+          <span className="sidebar-user-avatar">{(user?.name || 'A').charAt(0).toUpperCase()}</span>
+          <div className="sidebar-user-info">
           <span className="sidebar-user-name">{user?.name || 'Admin'}</span>
           <span className="sidebar-user-role">
-            {user?.role === 'admin' ? 'Administrator' : 'Operator'}
+            {ROLE_LABELS[user?.role] || user?.role}
           </span>
+          </div>
         </div>
         <button className="sidebar-logout" onClick={logout}>
           <LogOut size={14} strokeWidth={2.4} />
-          <span>Chiqish</span>
+          <span>Чиқиш</span>
         </button>
       </div>
     </aside>

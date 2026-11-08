@@ -7,6 +7,7 @@ import client from '../api/client';
 import { getPurchases, createPurchase, cancelPurchase } from '../api/purchases';
 import { getProducts } from '../api/products';
 import { getPartners } from '../api/partners';
+import PartnerPicker from '../components/PartnerPicker';
 import { formatDateTime, formatCurrency, formatNumber, formatMoneyInput, parseMoneyInput } from '../utils/formatters';
 import { downloadExcel } from '../utils/excelDownload';
 import Modal from '../components/Modal';
@@ -98,7 +99,7 @@ export default function Purchases() {
     setError('');
 
     if (!form.supplier_id || !form.product_id) {
-      setError("Yetkazib beruvchi va mahsulotni tanlang");
+      setError("Етказиб берувчи ва маҳсулотни танланг");
       return;
     }
 
@@ -131,32 +132,32 @@ export default function Purchases() {
       setModalOpen(false);
       fetchData();
     } catch (err) {
-      setError(err.response?.data?.detail || "Xatolik yuz berdi");
+      setError(err.response?.data?.detail || "Хатолик юз берди");
     } finally {
       setSaving(false);
     }
   };
 
   const handleCancel = async (id) => {
-    if (!window.confirm("Haqiqatan ham bu prixodni bekor qilmoqchimisiz?")) return;
+    if (!window.confirm("Ҳақиқатан ҳам бу приходни бекор қилмоқчимисиз?")) return;
 
     try {
       await cancelPurchase(id);
       fetchData();
     } catch (err) {
-      alert(err.response?.data?.detail || "Bekor qilishda xatolik");
+      alert(err.response?.data?.detail || "Бекор қилишда хатолик");
     }
   };
 
   const handleInitialStockSubmit = async (e) => {
     e.preventDefault();
-    if (!initialForm.product_id) return setInitialError("Mahsulot tanlang");
+    if (!initialForm.product_id) return setInitialError("Маҳсулот танланг");
     
     const qty = parseMoneyInput(initialForm.quantity_liters);
     const price = parseMoneyInput(initialForm.purchase_price_per_liter);
     
-    if (!qty || qty <= 0) return setInitialError("Miqdorni to'g'ri kiriting");
-    if (!price || price <= 0) return setInitialError("Narxni to'g'ri kiriting");
+    if (!qty || qty <= 0) return setInitialError("Миқдорни тўғри киритинг");
+    if (!price || price <= 0) return setInitialError("Нархни тўғри киритинг");
 
     setInitialLoading(true);
     setInitialError('');
@@ -172,7 +173,7 @@ export default function Purchases() {
       setInitialForm({ product_id: '', quantity_liters: '', purchase_price_per_liter: '', note: '' });
       fetchData();
     } catch (err) {
-      setInitialError(err.response?.data?.detail || "Xatolik yuz berdi");
+      setInitialError(err.response?.data?.detail || "Хатолик юз берди");
     } finally {
       setInitialLoading(false);
     }
@@ -189,7 +190,7 @@ export default function Purchases() {
   return (
     <div className="page">
       <div className="page-header">
-        <h1 className="page-title">Prixod (Xaridlar)</h1>
+        <h1 className="page-title">Приход (Харидлар)</h1>
         <button
           className="btn btn-secondary"
           onClick={() => downloadExcel('purchases', {}, 'natural_oil_purchases.xlsx')}
@@ -197,10 +198,10 @@ export default function Purchases() {
           ⬇ Excel
         </button>
         <button className="btn btn-secondary" onClick={() => setInitialStockOpen(true)}>
-          + O'zida bor qoldiq
+          + Ўзида бор қолдиқ
         </button>
         <button className="btn btn--primary" onClick={openCreateModal}>
-          + Yangi prixod
+          + Янги приход
         </button>
       </div>
 
@@ -209,23 +210,23 @@ export default function Purchases() {
           <table className="data-table">
             <thead>
               <tr>
-                <th>Sana</th>
-                <th>Yetkazib beruvchi</th>
-                <th>Mahsulot</th>
-                <th className="text-right">Miqdor (L)</th>
-                <th className="text-right">Narx (UZS)</th>
-                <th className="text-right">Jami summa</th>
-                <th className="text-right">To'langan</th>
-                <th className="text-right">Qarz</th>
-                <th>Holat</th>
-                <th>Amallar</th>
+                <th>Сана</th>
+                <th>Етказиб берувчи</th>
+                <th>Маҳсулот</th>
+                <th className="text-right">Миқдор (Л)</th>
+                <th className="text-right">Нарх (UZS)</th>
+                <th className="text-right">Жами сумма</th>
+                <th className="text-right">Тўланган</th>
+                <th className="text-right">Қарз</th>
+                <th>Ҳолат</th>
+                <th>Амаллар</th>
               </tr>
             </thead>
             <tbody>
               {purchases.length === 0 ? (
                 <tr>
                   <td colSpan={10}>
-                    <p className="empty-message">Prixodlar mavjud emas</p>
+                    <p className="empty-message">Приходлар мавжуд эмас</p>
                   </td>
                 </tr>
               ) : (
@@ -241,7 +242,7 @@ export default function Purchases() {
                     <td className="text-right text-danger">{formatCurrency(p.debt_amount)}</td>
                     <td>
                       <span className={`badge badge--${p.status === 'active' ? 'active' : 'cancelled'}`}>
-                        {p.status === 'active' ? 'Faol' : 'Bekor qilingan'}
+                        {p.status === 'active' ? 'Фаол' : 'Бекор қилинган'}
                       </span>
                     </td>
                     <td>
@@ -250,7 +251,7 @@ export default function Purchases() {
                           className="btn btn--sm btn--danger-outline"
                           onClick={() => handleCancel(p.id)}
                         >
-                          Bekor qilish
+                          Бекор қилиш
                         </button>
                       )}
                     </td>
@@ -266,7 +267,7 @@ export default function Purchases() {
       <Modal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
-        title="Yangi prixod"
+        title="Янги приход"
         width={600}
       >
         <form onSubmit={handleSubmit}>
@@ -274,7 +275,7 @@ export default function Purchases() {
 
           <div className="form-row">
             <div className="form-group">
-              <label>Sana *</label>
+              <label>Сана *</label>
               <input
                 type="date"
                 value={form.date}
@@ -282,37 +283,32 @@ export default function Purchases() {
                 required
               />
             </div>
-            <div className="form-group">
-              <label>Yetkazib beruvchi *</label>
-              <select
-                value={form.supplier_id}
-                onChange={(e) => updateField('supplier_id', e.target.value)}
-                required
-              >
-                <option value="">Tanlang...</option>
-                {suppliers.map(s => (
-                  <option key={s.id} value={s.id}>{s.name}</option>
-                ))}
-              </select>
-            </div>
+            <PartnerPicker
+              type="supplier"
+              label="Етказиб берувчи"
+              partners={suppliers}
+              onPartnersChange={setSuppliers}
+              value={form.supplier_id}
+              onChange={(v) => updateField('supplier_id', v)}
+            />
           </div>
 
           <div className="form-row">
             <div className="form-group">
-              <label>Mahsulot *</label>
+              <label>Маҳсулот *</label>
               <select
                 value={form.product_id}
                 onChange={(e) => updateField('product_id', e.target.value)}
                 required
               >
-                <option value="">Tanlang...</option>
+                <option value="">Танланг...</option>
                 {products.map(p => (
                   <option key={p.id} value={p.id}>{p.name}</option>
                 ))}
               </select>
             </div>
             <div className="form-group">
-              <label>Miqdor (Litr) *</label>
+              <label>Миқдор (Литр) *</label>
               <input
                 type="text"
                 value={form.quantity_liters}
@@ -325,7 +321,7 @@ export default function Purchases() {
 
           <div className="calculation-box" style={{ background: 'var(--bg-input)', padding: '16px', borderRadius: '8px', marginBottom: '16px', border: '1px solid var(--border-color)' }}>
             <div className="form-group" style={{ marginBottom: '16px' }}>
-              <label>Hisoblash usuli:</label>
+              <label>Ҳисоблаш усули:</label>
               <div style={{ display: 'flex', gap: '16px' }}>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 'normal' }}>
                   <input
@@ -334,7 +330,7 @@ export default function Purchases() {
                     onChange={() => updateField('calc_mode', 'price')}
                     style={{ width: 'auto' }}
                   />
-                  1 litr narxini kiritish
+                  1 литр нархини киритиш
                 </label>
                 <label style={{ display: 'flex', alignItems: 'center', gap: '6px', fontWeight: 'normal' }}>
                   <input
@@ -343,37 +339,37 @@ export default function Purchases() {
                     onChange={() => updateField('calc_mode', 'total')}
                     style={{ width: 'auto' }}
                   />
-                  Jami summani kiritish
+                  Жами суммани киритиш
                 </label>
               </div>
             </div>
 
             {form.calc_mode === 'price' ? (
               <div className="form-group">
-                <label>1 litr sotib olish narxi (UZS) *</label>
+                <label>1 литр сотиб олиш нархи (UZS) *</label>
                 <input
                   type="text"
                   value={form.purchase_price_per_liter}
                   onChange={(e) => updateField('purchase_price_per_liter', formatMoneyInput(e.target.value))}
-                  placeholder="Masalan: 9 000"
+                  placeholder="Масалан: 9 000"
                   required
                 />
                 <div style={{ marginTop: '8px', fontSize: '13px', color: 'var(--text-secondary)' }}>
-                  Jami summa: <strong style={{ color: 'var(--text-primary)' }}>{formatCurrency(form._calculated_total || 0)} UZS</strong>
+                  Жами сумма: <strong style={{ color: 'var(--text-primary)' }}>{formatCurrency(form._calculated_total || 0)} UZS</strong>
                 </div>
               </div>
             ) : (
               <div className="form-group">
-                <label>Jami summa (UZS) *</label>
+                <label>Жами сумма (UZS) *</label>
                 <input
                   type="text"
                   value={form.total_amount}
                   onChange={(e) => updateField('total_amount', formatMoneyInput(e.target.value))}
-                  placeholder="Masalan: 10 000 000"
+                  placeholder="Масалан: 10 000 000"
                   required
                 />
                 <div style={{ marginTop: '8px', fontSize: '13px', color: 'var(--text-secondary)' }}>
-                  1 litr narxi: <strong style={{ color: 'var(--text-primary)' }}>{formatCurrency(form._calculated_price || 0)} UZS</strong>
+                  1 литр нархи: <strong style={{ color: 'var(--text-primary)' }}>{formatCurrency(form._calculated_price || 0)} UZS</strong>
                 </div>
               </div>
             )}
@@ -381,36 +377,36 @@ export default function Purchases() {
 
           <div className="form-row">
             <div className="form-group">
-              <label>To'langan summa (UZS)</label>
+              <label>Тўланган сумма (UZS)</label>
               <input
                 type="text"
                 value={form.paid_amount}
                 onChange={(e) => updateField('paid_amount', formatMoneyInput(e.target.value))}
-                placeholder="Masalan: 5 000 000"
+                placeholder="Масалан: 5 000 000"
               />
               <div style={{ marginTop: '8px', fontSize: '13px', color: 'var(--text-secondary)' }}>
-                Qarz: <strong className="text-danger">{formatCurrency(form._calculated_debt || 0)} UZS</strong>
+                Қарз: <strong className="text-danger">{formatCurrency(form._calculated_debt || 0)} UZS</strong>
               </div>
             </div>
             <div className="form-group">
-              <label>To'lov turi</label>
+              <label>Тўлов тури</label>
               <select
                 value={form.payment_type}
                 onChange={(e) => updateField('payment_type', e.target.value)}
               >
-                <option value="cash">Naqd (Cash)</option>
-                <option value="bank_transfer">Perechisleniya (Bank)</option>
+                <option value="cash">Нақд</option>
+                <option value="bank_transfer">Перечисления (Банк)</option>
               </select>
             </div>
           </div>
 
           <div className="form-group">
-            <label>Izoh</label>
+            <label>Изоҳ</label>
             <input
               type="text"
               value={form.note}
               onChange={(e) => updateField('note', e.target.value)}
-              placeholder="Qo'shimcha ma'lumot..."
+              placeholder="Қўшимча маълумот..."
             />
           </div>
 
@@ -420,14 +416,14 @@ export default function Purchases() {
               className="btn btn--outline"
               onClick={() => setModalOpen(false)}
             >
-              Bekor qilish
+              Бекор қилиш
             </button>
             <button
               type="submit"
               className="btn btn--primary"
               disabled={saving}
             >
-              {saving ? 'Saqlanmoqda...' : 'Saqlash'}
+              {saving ? 'Сақланмоқда...' : 'Сақлаш'}
             </button>
           </div>
         </form>
@@ -437,51 +433,51 @@ export default function Purchases() {
       <Modal
         isOpen={initialStockOpen}
         onClose={() => setInitialStockOpen(false)}
-        title="O'zida bor qoldiq qo'shish"
+        title="Ўзида бор қолдиқ қўшиш"
         width={500}
       >
         <form onSubmit={handleInitialStockSubmit}>
           {initialError && <div className="alert alert--error">{initialError}</div>}
           <div className="form-group">
-            <label>Mahsulot *</label>
+            <label>Маҳсулот *</label>
             <select
               value={initialForm.product_id}
               onChange={(e) => setInitialForm({ ...initialForm, product_id: e.target.value })}
               required
             >
-              <option value="">Tanlang...</option>
+              <option value="">Танланг...</option>
               {products.map(p => (
                 <option key={p.id} value={p.id}>{p.name}</option>
               ))}
             </select>
           </div>
           <div className="form-group">
-            <label>Miqdor (Litr) *</label>
+            <label>Миқдор (Литр) *</label>
             <input
               type="text"
               value={initialForm.quantity_liters}
               onChange={(e) => setInitialForm({ ...initialForm, quantity_liters: formatMoneyInput(e.target.value) })}
-              placeholder="Masalan: 1 000"
+              placeholder="Масалан: 1 000"
               required
             />
           </div>
           <div className="form-group">
-            <label>1 litr tannarxi (UZS) *</label>
+            <label>1 литр таннархи (UZS) *</label>
             <input
               type="text"
               value={initialForm.purchase_price_per_liter}
               onChange={(e) => setInitialForm({ ...initialForm, purchase_price_per_liter: formatMoneyInput(e.target.value) })}
-              placeholder="Masalan: 9 000"
+              placeholder="Масалан: 9 000"
               required
             />
           </div>
           <div className="form-group">
-            <label>Izoh (ixtiyoriy)</label>
+            <label>Изоҳ (ихтиёрий)</label>
             <input
               type="text"
               value={initialForm.note}
               onChange={(e) => setInitialForm({ ...initialForm, note: e.target.value })}
-              placeholder="Qo'shimcha ma'lumot..."
+              placeholder="Қўшимча маълумот..."
             />
           </div>
           <div className="form-actions">
@@ -490,14 +486,14 @@ export default function Purchases() {
               className="btn btn--outline"
               onClick={() => setInitialStockOpen(false)}
             >
-              Bekor qilish
+              Бекор қилиш
             </button>
             <button
               type="submit"
               className="btn btn--primary"
               disabled={initialLoading}
             >
-              {initialLoading ? 'Saqlanmoqda...' : 'Saqlash'}
+              {initialLoading ? 'Сақланмоқда...' : 'Сақлаш'}
             </button>
           </div>
         </form>

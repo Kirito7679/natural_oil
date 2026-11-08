@@ -177,4 +177,4 @@ class TestPurchasesAndInventory:
         # Try to cancel
         c_resp = client.patch(f"/api/purchases/{purchase_id}/cancel", headers=admin_headers)
         assert c_resp.status_code == 400
-        assert "sotuv qilingan" in c_resp.json()["detail"]
+        assert "сотув қилинган" in c_resp.json()["detail"]

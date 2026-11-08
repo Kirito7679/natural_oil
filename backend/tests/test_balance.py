@@ -208,8 +208,8 @@ class TestAuthAndRoles:
 
     def test_login_success(self, client):
         resp = client.post("/api/auth/login", json={
-            "phone": "+998901234567",
-            "password": "admin123",
+            "phone": "95 810 06 00",
+            "password": "1234567",
         })
         assert resp.status_code == 200
         data = resp.json()
@@ -218,7 +218,7 @@ class TestAuthAndRoles:
 
     def test_login_wrong_password(self, client):
         resp = client.post("/api/auth/login", json={
-            "phone": "+998901234567",
+            "phone": "95 810 06 00",
             "password": "wrongpassword",
         })
         assert resp.status_code == 401
@@ -226,14 +226,14 @@ class TestAuthAndRoles:
     def test_login_nonexistent_user(self, client):
         resp = client.post("/api/auth/login", json={
             "phone": "+998999999999",
-            "password": "admin123",
+            "password": "1234567",
         })
         assert resp.status_code == 401
 
     def test_get_current_user(self, client, admin_headers):
         resp = client.get("/api/auth/me", headers=admin_headers)
         assert resp.status_code == 200
-        assert resp.json()["name"] == "Admin"
+        assert resp.json()["name"] == "Хумоюн"
         assert resp.json()["role"] == "admin"
 
     def test_invalid_token(self, client):
@@ -259,26 +259,21 @@ class TestBalanceAccounts:
 class TestSeedData:
     """Test that seed data was created correctly."""
 
-    def test_default_products_exist(self, db_session):
+    def test_no_default_products(self, db_session):
+        """Mahsulotlarni foydalanuvchi o'zi kiritadi — avtomatik yaratilmaydi."""
         from app.models.product import Product
-        products = db_session.query(Product).all()
-        names = {p.name for p in products}
-        assert "AI-80" in names
-        assert "AI-91" in names
-        assert "AI-92" in names
-        assert "AI-95" in names
-        assert "Dizel" in names
+        assert db_session.query(Product).count() == 0
 
     def test_default_expense_categories_exist(self, db_session):
         from app.models.expense import ExpenseCategory
         categories = db_session.query(ExpenseCategory).all()
         names = {c.name for c in categories}
-        assert "Arenda" in names
-        assert "Oylik" in names
-        assert "Transport" in names
+        assert "Ижара (омбор, офис)" in names
+        assert "Ҳайдовчи ва ишчилар ойлиги" in names
+        assert "Ёқилғи ташиш (логистика)" in names
 
     def test_admin_user_exists(self, db_session):
         from app.models.user import User
         admin = db_session.query(User).filter(User.role == "admin").first()
         assert admin is not None
-        assert admin.name == "Admin"
+        assert admin.name == "Хумоюн"

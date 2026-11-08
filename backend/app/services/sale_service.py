@@ -7,6 +7,7 @@ from app.models.sale import Sale, SalePayment
 from app.models.inventory import InventoryBatch
 from app.models.debt import CustomerDebt
 from app.models.product import Product
+from app.models.partner import Partner
 from app.schemas.sale import SaleCreate
 from app.services.balance_service import update_balance
 from app.utils.enums import PaymentType, MovementType, MovementDirection
@@ -20,38 +21,47 @@ def create_sale(
     # 1. Fetch related product and inventory batch
     product = db.query(Product).filter(Product.id == data.product_id).first()
     if not product:
-        raise ValueError("Mahsulot topilmadi")
+        raise ValueError("Маҳсулот топилмади")
     if not product.is_active:
-        raise ValueError("Nofaol mahsulotni sotish mumkin emas")
+        raise ValueError("Нофаол маҳсулотни сотиш мумкин эмас")
         
+    customer = db.get(Partner, data.customer_id)
+    if customer is None:
+        raise ValueError("Мижоз топилмади")
+    if customer.type not in ("customer", "both"):
+        raise ValueError("Танланган ҳамкор мижоз эмас")
+
     batch = db.query(InventoryBatch).filter(InventoryBatch.id == data.inventory_batch_id).first()
     if not batch:
-        raise ValueError("Ombor partiyasi topilmadi")
+        raise ValueError("Омбор партияси топилмади")
         
     if batch.product_id != data.product_id:
-        raise ValueError("Ombor partiyasi mahsulotga mos kelmaydi")
+        raise ValueError("Омбор партияси маҳсулотга мос келмайди")
         
     if batch.status == "finished":
-        raise ValueError("Ushbu partiyada mahsulot tugagan (finished)")
+        raise ValueError("Ушбу партияда маҳсулот тугаган")
         
     if data.quantity_liters > batch.remaining_quantity_liters:
-        raise ValueError("Tanlangan partiyada yetarli mahsulot yo'q.")
+        raise ValueError("Танланган партияда етарли маҳсулот йўқ.")
         
     # Backend recalculation
-    total_sale_amount = data.quantity_liters * data.sale_price_per_liter
-    total_cost = data.quantity_liters * batch.purchase_price_per_liter
-    profit_per_liter = data.sale_price_per_liter - batch.purchase_price_per_liter
-    total_profit = profit_per_liter * data.quantity_liters
-    
-    paid_amount = sum(p.amount for p in data.payments)
+    total_sale_amount = round(data.quantity_liters * data.sale_price_per_liter, 2)
+    total_cost = round(data.quantity_liters * batch.purchase_price_per_liter, 2)
+    profit_per_liter = round(data.sale_price_per_liter - batch.purchase_price_per_liter, 4)
+    total_profit = round(total_sale_amount - total_cost, 2)
+
+    paid_amount = round(sum(p.amount for p in data.payments), 2)
     if paid_amount > total_sale_amount + 0.01:
-        raise ValueError("To'langan summa umumiy sotuv summasidan katta bo'lishi mumkin emas.")
+        raise ValueError("Тўланган сумма умумий сотув суммасидан катта бўлиши мумкин эмас.")
         
-    debt_amount = total_sale_amount - paid_amount
+    debt_amount = round(total_sale_amount - paid_amount, 2)
+    if debt_amount < 0.01:
+        debt_amount = 0.0
 
     # 2. Update Inventory Batch
     batch.remaining_quantity_liters -= data.quantity_liters
-    if batch.remaining_quantity_liters <= 0:
+    batch.remaining_quantity_liters = round(batch.remaining_quantity_liters, 3)
+    if batch.remaining_quantity_liters <= 0.0005:
         batch.remaining_quantity_liters = 0.0
         batch.status = "finished"
 
@@ -95,9 +105,10 @@ def create_sale(
             movement_type=MovementType.SALE_PAYMENT,
             related_table="sales",
             related_id=sale.id,
-            note=f"Sotuv tushumi. Mahsulot: {data.product_id}, Miqdor: {data.quantity_liters}L",
+            note=f"Сотув тушуми. Маҳсулот: {data.product_id}, Миқдор: {data.quantity_liters}Л",
             user_id=user_id,
             auto_commit=False,
+            on_date=data.date,
         )
 
     # 5. Create Customer Debt if there is a remaining amount
@@ -122,14 +133,14 @@ def cancel_sale(
     """Cancel a sale, return inventory, reverse payments/debt."""
     sale = db.query(Sale).filter(Sale.id == sale_id).first()
     if not sale:
-        raise ValueError("Sotuv topilmadi")
+        raise ValueError("Сотув топилмади")
     if sale.status == "cancelled":
-        raise ValueError("Sotuv allaqachon bekor qilingan")
+        raise ValueError("Сотув аллақачон бекор қилинган")
 
     # 1. Reverse Inventory
     batch = db.query(InventoryBatch).filter(InventoryBatch.id == sale.inventory_batch_id).first()
     if not batch:
-        raise ValueError("Bog'langan ombor partiyasi topilmadi")
+        raise ValueError("Боғланган омбор партияси топилмади")
         
     batch.remaining_quantity_liters += sale.quantity_liters
     if batch.status == "finished" and batch.remaining_quantity_liters > 0:
@@ -148,13 +159,13 @@ def cancel_sale(
                     movement_type=MovementType.CANCELLATION,
                     related_table="sales",
                     related_id=sale.id,
-                    note=f"Sotuv bekor qilindi. Tushum qaytarildi.",
+                    note=f"Сотув бекор қилинди. Тушум қайтарилди.",
                     user_id=user_id,
                     auto_commit=False,
                 )
             except ValueError:
                 # Catch insufficient funds error from update_balance
-                raise ValueError("Balansda ushbu sotuvni bekor qilish uchun yetarli mablag' yo'q.")
+                raise ValueError("Балансда ушбу сотувни бекор қилиш учун етарли маблағ йўқ.")
 
     # 3. Reverse Customer Debt
     if sale.debt_amount > 0:
@@ -165,7 +176,7 @@ def cancel_sale(
         )
         if debt:
             if debt.paid_amount > 0:
-                 raise ValueError("Bu sotuv bo'yicha mijoz qarz to'lagan. Oldin qarz to'lovini bekor qiling.")
+                 raise ValueError("Бу сотув бўйича мижоз қарз тўлаган. Олдин қарз тўловини бекор қилинг.")
             debt.status = "cancelled"
 
     # 4. Update Sale status

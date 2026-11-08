@@ -9,22 +9,22 @@ import { formatCurrency, formatNumber } from '../utils/formatters';
 import Modal from '../components/Modal';
 
 const PARTNER_TYPE_LABELS = {
-  customer: 'Mijoz',
-  supplier: 'Yetkazib beruvchi',
-  both: 'Ikkalasi ham',
+  customer: 'Мижоз',
+  supplier: 'Етказиб берувчи',
+  both: 'Иккаласи ҳам',
 };
 
 const TYPE_OPTIONS = [
-  { value: '', label: 'Barchasi' },
-  { value: 'customer', label: 'Mijozlar' },
-  { value: 'supplier', label: 'Yetkazib beruvchilar' },
-  { value: 'both', label: 'Ikkalasi ham' },
+  { value: '', label: 'Барчаси' },
+  { value: 'customer', label: 'Мижозлар' },
+  { value: 'supplier', label: 'Етказиб берувчилар' },
+  { value: 'both', label: 'Иккаласи ҳам' },
 ];
 
 const TYPE_FORM_OPTIONS = [
-  { value: 'customer', label: 'Mijoz' },
-  { value: 'supplier', label: 'Yetkazib beruvchi' },
-  { value: 'both', label: 'Ikkalasi ham' },
+  { value: 'customer', label: 'Мижоз' },
+  { value: 'supplier', label: 'Етказиб берувчи' },
+  { value: 'both', label: 'Иккаласи ҳам' },
 ];
 
 export default function Partners() {
@@ -94,7 +94,7 @@ export default function Partners() {
       setStats(res.data);
     } catch (err) {
       console.error(err);
-      alert("Statistika yuklab bo'lmadi.");
+      alert("Статистика юклаб бўлмади.");
     } finally {
       setStatsLoading(false);
     }
@@ -119,7 +119,7 @@ export default function Partners() {
       setModalOpen(false);
       fetchPartners();
     } catch (err) {
-      setError(err.response?.data?.detail || "Xatolik yuz berdi");
+      setError(err.response?.data?.detail || "Хатолик юз берди");
     } finally {
       setSaving(false);
     }
@@ -149,16 +149,16 @@ export default function Partners() {
   return (
     <div className="page">
       <div className="page-header">
-        <h1 className="page-title">Hamkorlar</h1>
+        <h1 className="page-title">Ҳамкорлар</h1>
         <button className="btn btn--primary" onClick={openCreateModal}>
-          + Yangi hamkor
+          + Янги ҳамкор
         </button>
       </div>
 
       {/* Filters */}
       <div className="filter-bar">
         <div className="filter-group">
-          <label>Turi:</label>
+          <label>Тури:</label>
           <select value={filterType} onChange={(e) => setFilterType(e.target.value)}>
             {TYPE_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -166,10 +166,10 @@ export default function Partners() {
           </select>
         </div>
         <div className="filter-group">
-          <label>Qidirish:</label>
+          <label>Қидириш:</label>
           <input
             type="text"
-            placeholder="Nomi, kompaniya yoki telefon..."
+            placeholder="Номи, компания ёки телефон..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
@@ -182,20 +182,20 @@ export default function Partners() {
             <thead>
               <tr>
                 <th>#</th>
-                <th>Nomi</th>
-                <th>Telefon</th>
-                <th>Kompaniya</th>
-                <th>Turi</th>
-                <th>Holat</th>
-                <th>Manzil</th>
-                <th>Amallar</th>
+                <th>Номи</th>
+                <th>Телефон</th>
+                <th>Компания</th>
+                <th>Тури</th>
+                <th>Ҳолат</th>
+                <th>Манзил</th>
+                <th>Амаллар</th>
               </tr>
             </thead>
             <tbody>
               {partners.length === 0 ? (
                 <tr>
                   <td colSpan={8}>
-                    <p className="empty-message">Hamkorlar topilmadi</p>
+                    <p className="empty-message">Ҳамкорлар топилмади</p>
                   </td>
                 </tr>
               ) : (
@@ -212,7 +212,7 @@ export default function Partners() {
                     </td>
                     <td>
                       <span className={`badge badge--${p.is_active ? 'active' : 'cancelled'}`}>
-                        {p.is_active ? 'Faol' : 'Nofaol'}
+                        {p.is_active ? 'Фаол' : 'Нофаол'}
                       </span>
                     </td>
                     <td>{p.address || '—'}</td>
@@ -221,7 +221,7 @@ export default function Partners() {
                         <button
                           className="row-action-btn"
                           onClick={() => openDetailModal(p)}
-                          title="Batafsil"
+                          title="Батафсил"
                         >
                           <Eye size={16} strokeWidth={2.2} />
                         </button>
@@ -229,13 +229,13 @@ export default function Partners() {
                           className="btn btn--outline btn--sm"
                           onClick={() => openEditModal(p)}
                         >
-                          Tahrirlash
+                          Таҳрирлаш
                         </button>
                         <button
                           className={`btn btn--sm ${p.is_active ? 'btn--danger-outline' : 'btn--success-outline'}`}
                           onClick={() => handleToggle(p)}
                         >
-                          {p.is_active ? "O'chirish" : 'Faollashtirish'}
+                          {p.is_active ? "Ўчириш" : 'Фаоллаштириш'}
                         </button>
                       </div>
                     </td>
@@ -251,24 +251,24 @@ export default function Partners() {
       <Modal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
-        title={editingPartner ? "Hamkorni tahrirlash" : "Yangi hamkor"}
+        title={editingPartner ? "Ҳамкорни таҳрирлаш" : "Янги ҳамкор"}
         width={560}
       >
         <form onSubmit={handleSubmit}>
           {error && <div className="alert alert--error">{error}</div>}
 
           <div className="form-group">
-            <label htmlFor="partner-name">Nomi *</label>
+            <label htmlFor="partner-name">Номи *</label>
             <input
               id="partner-name" type="text" value={form.name}
               onChange={(e) => updateField('name', e.target.value)}
-              placeholder="Hamkor nomi" required
+              placeholder="Ҳамкор номи" required
             />
           </div>
 
           <div className="form-row">
             <div className="form-group">
-              <label htmlFor="partner-phone">Telefon</label>
+              <label htmlFor="partner-phone">Телефон</label>
               <input
                 id="partner-phone" type="text" value={form.phone}
                 onChange={(e) => updateField('phone', e.target.value)}
@@ -276,7 +276,7 @@ export default function Partners() {
               />
             </div>
             <div className="form-group">
-              <label htmlFor="partner-type">Turi *</label>
+              <label htmlFor="partner-type">Тури *</label>
               <select
                 id="partner-type" value={form.type}
                 onChange={(e) => updateField('type', e.target.value)}
@@ -289,38 +289,38 @@ export default function Partners() {
           </div>
 
           <div className="form-group">
-            <label htmlFor="partner-company">Kompaniya nomi</label>
+            <label htmlFor="partner-company">Компания номи</label>
             <input
               id="partner-company" type="text" value={form.company_name}
               onChange={(e) => updateField('company_name', e.target.value)}
-              placeholder="Kompaniya nomi"
+              placeholder="Компания номи"
             />
           </div>
 
           <div className="form-group">
-            <label htmlFor="partner-address">Manzil</label>
+            <label htmlFor="partner-address">Манзил</label>
             <input
               id="partner-address" type="text" value={form.address}
               onChange={(e) => updateField('address', e.target.value)}
-              placeholder="Manzil"
+              placeholder="Манзил"
             />
           </div>
 
           <div className="form-group">
-            <label htmlFor="partner-note">Izoh</label>
+            <label htmlFor="partner-note">Изоҳ</label>
             <textarea
               id="partner-note" value={form.note}
               onChange={(e) => updateField('note', e.target.value)}
-              placeholder="Qo'shimcha ma'lumot..." rows={3}
+              placeholder="Қўшимча маълумот..." rows={3}
             />
           </div>
 
           <div className="form-actions">
             <button type="button" className="btn btn--outline" onClick={() => setModalOpen(false)}>
-              Bekor qilish
+              Бекор қилиш
             </button>
             <button type="submit" className="btn btn--primary" disabled={saving}>
-              {saving ? 'Saqlanmoqda...' : 'Saqlash'}
+              {saving ? 'Сақланмоқда...' : 'Сақлаш'}
             </button>
           </div>
         </form>
@@ -330,22 +330,22 @@ export default function Partners() {
       <Modal
         isOpen={!!detailPartner}
         onClose={() => { setDetailPartner(null); setStats(null); }}
-        title={detailPartner ? `${detailPartner.name} — batafsil` : ''}
+        title={detailPartner ? `${detailPartner.name} — батафсил` : ''}
         width={760}
       >
         {statsLoading ? (
-          <p className="empty-message">Yuklanmoqda...</p>
+          <p className="empty-message">Юкланмоқда...</p>
         ) : stats ? (
           <>
             {/* Asosiy ma'lumot */}
             <div className="modal-section">
-              <div className="modal-section-title">Hamkor ma'lumoti</div>
+              <div className="modal-section-title">Ҳамкор маълумоти</div>
               <div className="modal-section-row">
-                <span className="label">Nomi</span>
+                <span className="label">Номи</span>
                 <span className="value">{stats.partner.name}</span>
               </div>
               <div className="modal-section-row">
-                <span className="label">Turi</span>
+                <span className="label">Тури</span>
                 <span className="value">
                   <span className={`badge badge--type-${stats.partner.type}`}>
                     {PARTNER_TYPE_LABELS[stats.partner.type]}
@@ -354,19 +354,19 @@ export default function Partners() {
               </div>
               {stats.partner.phone && (
                 <div className="modal-section-row">
-                  <span className="label">Telefon</span>
+                  <span className="label">Телефон</span>
                   <span className="value">{stats.partner.phone}</span>
                 </div>
               )}
               {stats.partner.company_name && (
                 <div className="modal-section-row">
-                  <span className="label">Kompaniya</span>
+                  <span className="label">Компания</span>
                   <span className="value">{stats.partner.company_name}</span>
                 </div>
               )}
               {stats.partner.address && (
                 <div className="modal-section-row">
-                  <span className="label">Manzil</span>
+                  <span className="label">Манзил</span>
                   <span className="value">{stats.partner.address}</span>
                 </div>
               )}
@@ -375,25 +375,25 @@ export default function Partners() {
             {/* Sotuv statistikasi (mijoz bo'lsa) */}
             {(stats.partner.type === 'customer' || stats.partner.type === 'both') && (
               <div className="modal-section">
-                <div className="modal-section-title">Sotuv (mijoz sifatida)</div>
+                <div className="modal-section-title">Сотув (мижоз сифатида)</div>
                 <div className="modal-section-row">
-                  <span className="label">Jami sotilgan miqdor</span>
-                  <span className="value">{formatNumber(stats.as_customer.total_quantity)} L</span>
+                  <span className="label">Жами сотилган миқдор</span>
+                  <span className="value">{formatNumber(stats.as_customer.total_quantity)} Л</span>
                 </div>
                 <div className="modal-section-row">
-                  <span className="label">Jami sotuv summasi</span>
+                  <span className="label">Жами сотув суммаси</span>
                   <span className="value value--gold">{formatCurrency(stats.as_customer.total_amount)}</span>
                 </div>
                 <div className="modal-section-row">
-                  <span className="label">Operatsiyalar soni</span>
-                  <span className="value">{stats.as_customer.total_count} ta</span>
+                  <span className="label">Операциялар сони</span>
+                  <span className="value">{stats.as_customer.total_count} та</span>
                 </div>
                 <div className="modal-section-row">
-                  <span className="label">Oxirgi sotuv sanasi</span>
+                  <span className="label">Охирги сотув санаси</span>
                   <span className="value">{stats.as_customer.last_date || '—'}</span>
                 </div>
                 <div className="modal-section-row">
-                  <span className="label">Joriy qarz (mijozdan)</span>
+                  <span className="label">Жорий қарз (мижоздан)</span>
                   <span className={`value ${stats.as_customer.active_debt > 0 ? 'value--red' : 'value--green'}`}>
                     {formatCurrency(stats.as_customer.active_debt)}
                   </span>
@@ -404,25 +404,25 @@ export default function Partners() {
             {/* Xarid statistikasi (yetkazib beruvchi bo'lsa) */}
             {(stats.partner.type === 'supplier' || stats.partner.type === 'both') && (
               <div className="modal-section">
-                <div className="modal-section-title">Xarid (yetkazib beruvchi sifatida)</div>
+                <div className="modal-section-title">Харид (етказиб берувчи сифатида)</div>
                 <div className="modal-section-row">
-                  <span className="label">Jami olingan miqdor</span>
-                  <span className="value">{formatNumber(stats.as_supplier.total_quantity)} L</span>
+                  <span className="label">Жами олинган миқдор</span>
+                  <span className="value">{formatNumber(stats.as_supplier.total_quantity)} Л</span>
                 </div>
                 <div className="modal-section-row">
-                  <span className="label">Jami xarid summasi</span>
+                  <span className="label">Жами харид суммаси</span>
                   <span className="value value--gold">{formatCurrency(stats.as_supplier.total_amount)}</span>
                 </div>
                 <div className="modal-section-row">
-                  <span className="label">Operatsiyalar soni</span>
-                  <span className="value">{stats.as_supplier.total_count} ta</span>
+                  <span className="label">Операциялар сони</span>
+                  <span className="value">{stats.as_supplier.total_count} та</span>
                 </div>
                 <div className="modal-section-row">
-                  <span className="label">Oxirgi xarid sanasi</span>
+                  <span className="label">Охирги харид санаси</span>
                   <span className="value">{stats.as_supplier.last_date || '—'}</span>
                 </div>
                 <div className="modal-section-row">
-                  <span className="label">Bizning qarz (unga)</span>
+                  <span className="label">Бизнинг қарз (унга)</span>
                   <span className={`value ${stats.as_supplier.active_debt > 0 ? 'value--red' : 'value--green'}`}>
                     {formatCurrency(stats.as_supplier.active_debt)}
                   </span>
@@ -432,19 +432,19 @@ export default function Partners() {
 
             {/* Tranzaksiyalar tarixi */}
             <div className="modal-section">
-              <div className="modal-section-title">Oxirgi tranzaksiyalar ({stats.transactions.length} ta)</div>
+              <div className="modal-section-title">Охирги транзакциялар ({stats.transactions.length} та)</div>
               {stats.transactions.length === 0 ? (
-                <p className="empty-message" style={{ padding: '12px 0' }}>Tranzaksiyalar yo'q</p>
+                <p className="empty-message" style={{ padding: '12px 0' }}>Транзакциялар йўқ</p>
               ) : (
                 <div style={{ overflowX: 'auto' }}>
                   <table className="data-table" style={{ fontSize: 12.5 }}>
                     <thead>
                       <tr>
-                        <th>Sana</th>
-                        <th>Tur</th>
-                        <th>Mahsulot</th>
-                        <th className="text-right">Miqdor</th>
-                        <th className="text-right">Summa</th>
+                        <th>Сана</th>
+                        <th>Тур</th>
+                        <th>Маҳсулот</th>
+                        <th className="text-right">Миқдор</th>
+                        <th className="text-right">Сумма</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -458,7 +458,7 @@ export default function Partners() {
                           </td>
                           <td>{t.product}</td>
                           <td className="text-right">
-                            {t.quantity > 0 ? `${formatNumber(t.quantity)} L` : '—'}
+                            {t.quantity > 0 ? `${formatNumber(t.quantity)} Л` : '—'}
                           </td>
                           <td className="text-right" style={{ fontWeight: 700 }}>
                             {formatCurrency(t.amount)}
@@ -473,12 +473,12 @@ export default function Partners() {
 
             <div className="form-actions">
               <button className="btn btn--outline" onClick={() => { setDetailPartner(null); setStats(null); }}>
-                Yopish
+                Ёпиш
               </button>
             </div>
           </>
         ) : (
-          <p className="empty-message">Ma'lumot topilmadi</p>
+          <p className="empty-message">Маълумот топилмади</p>
         )}
       </Modal>
     </div>

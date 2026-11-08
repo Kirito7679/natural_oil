@@ -22,11 +22,11 @@ def pay_customer_debt(
 
     debt = db.query(CustomerDebt).filter(CustomerDebt.id == debt_id).first()
     if not debt:
-        raise ValueError("Qarz topilmadi")
+        raise ValueError("Қарз топилмади")
     if debt.status != "active":
-        raise ValueError("Bu qarz allaqachon yopilgan.")
+        raise ValueError("Бу қарз аллақачон ёпилган.")
     if data.amount > debt.remaining_amount + 0.01:
-        raise ValueError("To'lov summasi qolgan qarzdan katta bo'lishi mumkin emas.")
+        raise ValueError("Тўлов суммаси қолган қарздан катта бўлиши мумкин эмас.")
 
     # 1. Create debt payment record
     payment = DebtPayment(
@@ -60,9 +60,10 @@ def pay_customer_debt(
         movement_type=MovementType.CUSTOMER_DEBT_PAYMENT,
         related_table="debt_payments",
         related_id=payment.id,
-        note=f"Mijoz qarz to'lovi. Qarz ID: {debt.id}, Mijoz: {debt.customer_id}",
+        note=f"Мижоз қарз тўлови. Қарз ID: {debt.id}, Мижоз: {debt.customer_id}",
         user_id=user_id,
         auto_commit=False,
+        on_date=data.date,
     )
 
     db.commit()
@@ -77,11 +78,11 @@ def pay_supplier_debt(
 
     debt = db.query(SupplierDebt).filter(SupplierDebt.id == debt_id).first()
     if not debt:
-        raise ValueError("Qarz topilmadi")
+        raise ValueError("Қарз топилмади")
     if debt.status != "active":
-        raise ValueError("Bu qarz allaqachon yopilgan.")
+        raise ValueError("Бу қарз аллақачон ёпилган.")
     if data.amount > debt.remaining_amount + 0.01:
-        raise ValueError("To'lov summasi qolgan qarzdan katta bo'lishi mumkin emas.")
+        raise ValueError("Тўлов суммаси қолган қарздан катта бўлиши мумкин эмас.")
 
     # 1. Create debt payment record
     payment = DebtPayment(
@@ -115,9 +116,10 @@ def pay_supplier_debt(
         movement_type=MovementType.SUPPLIER_DEBT_PAYMENT,
         related_table="debt_payments",
         related_id=payment.id,
-        note=f"Yetkazib beruvchi qarz to'lovi. Qarz ID: {debt.id}, Yetkazib beruvchi: {debt.supplier_id}",
+        note=f"Етказиб берувчи қарз тўлови. Қарз ID: {debt.id}, Етказиб берувчи: {debt.supplier_id}",
         user_id=user_id,
         auto_commit=False,
+        on_date=data.date,
     )
 
     db.commit()

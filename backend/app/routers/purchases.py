@@ -39,7 +39,7 @@ def get_purchase(
     """Bitta prixod haqida ma'lumot."""
     purchase = db.query(Purchase).filter(Purchase.id == purchase_id).first()
     if not purchase:
-        raise HTTPException(status_code=404, detail="Prixod topilmadi")
+        raise HTTPException(status_code=404, detail="Приход топилмади")
     return PurchaseResponse.model_validate(purchase)
 
 

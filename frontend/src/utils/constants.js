@@ -5,35 +5,35 @@
  */
 
 export const PAYMENT_TYPES = [
-  { value: 'cash', label: 'Naqd' },
-  { value: 'bank_transfer', label: 'Perechisleniya' },
+  { value: 'cash', label: 'Нақд' },
+  { value: 'bank_transfer', label: 'Перечисления' },
 ];
 
 export const PAYMENT_LABELS = {
-  cash: 'Naqd',
-  bank_transfer: 'Perechisleniya',
+  cash: 'Нақд',
+  bank_transfer: 'Перечисления',
 };
 
 export const MOVEMENT_TYPE_LABELS = {
-  initial_balance: "Boshlang'ich balans",
-  purchase_payment: "Prixod to'lovi",
-  sale_payment: "Sotuv to'lovi",
-  customer_debt_payment: "Mijoz qarzi to'lovi",
-  supplier_debt_payment: "Yetkazib beruvchi qarzi to'lovi",
-  expense: 'Xarajat',
-  balance_adjustment: 'Balans tuzatish',
-  cancellation: 'Bekor qilish',
+  initial_balance: "Бошланғич баланс",
+  purchase_payment: "Приход тўлови",
+  sale_payment: "Сотув тўлови",
+  customer_debt_payment: "Мижоз қарзи тўлови",
+  supplier_debt_payment: "Етказиб берувчи қарзи тўлови",
+  expense: 'Харажат',
+  balance_adjustment: 'Баланс тузатиш',
+  cancellation: 'Бекор қилиш',
 };
 
 export const DIRECTION_LABELS = {
-  income: 'Kirim',
-  outgoing: 'Chiqim',
+  income: 'Кирим',
+  outgoing: 'Чиқим',
 };
 
 export const STATUS_LABELS = {
-  active: 'Faol',
-  cancelled: 'Bekor qilingan',
-  closed: 'Yopilgan',
-  finished: 'Tugagan',
-  deleted: "O'chirilgan",
+  active: 'Фаол',
+  cancelled: 'Бекор қилинган',
+  closed: 'Ёпилган',
+  finished: 'Тугаган',
+  deleted: "Ўчирилган",
 };

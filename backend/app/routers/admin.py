@@ -53,15 +53,15 @@ def clear_data(
 
     # Faqat admin
     if current_user.role != "admin":
-        raise HTTPException(status_code=403, detail="Faqat administrator bajara oladi")
+        raise HTTPException(status_code=403, detail="Фақат директор бажара олади")
 
     # Parolni tekshirish
     if not verify_password(payload.password, current_user.password_hash):
-        raise HTTPException(status_code=400, detail="Parol noto'g'ri")
+        raise HTTPException(status_code=400, detail="Парол нотўғри")
 
     # Tasdiqlash matnini tekshirish
-    if payload.confirm_text.strip().upper() != "TOZALASH":
-        raise HTTPException(status_code=400, detail="Tasdiqlash matni noto'g'ri. 'TOZALASH' deb yozing.")
+    if payload.confirm_text.strip().upper() not in ("TOZALASH", "ТОЗАЛАШ"):
+        raise HTTPException(status_code=400, detail="Тасдиқлаш матни нотўғри. 'ТОЗАЛАШ' деб ёзинг.")
 
     deleted_counts = {}
 
@@ -94,10 +94,10 @@ def clear_data(
             db.commit()
         except Exception:
             pass
-        raise HTTPException(status_code=500, detail=f"Tozalashda xatolik: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"Тозалашда хатолик: {str(e)}")
 
     return {
         "ok": True,
-        "message": "Tizim muvaffaqiyatli tozalandi",
+        "message": "Тизим муваффақиятли тозаланди",
         "deleted": deleted_counts,
     }

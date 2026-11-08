@@ -55,3 +55,4 @@ class DebtType(str, enum.Enum):
 class UserRole(str, enum.Enum):
     ADMIN = "admin"
     OPERATOR = "operator"
+    INVESTOR = "investor"  # faqat ko'rish huquqi

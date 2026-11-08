@@ -7,8 +7,12 @@ from app.models.purchase import Purchase, PurchasePayment
 from app.models.inventory import InventoryBatch
 from app.models.debt import SupplierDebt
 from app.models.partner import Partner
+from app.models.product import Product
 from app.schemas.purchase import PurchaseCreate, InitialFuelStockRequest
 from app.services.balance_service import update_balance
+# Boshlang'ich qoldiq uchun tizim yetkazib beruvchisi (eski lotin nomi ham qo'llab-quvvatlanadi)
+INITIAL_STOCK_SUPPLIER_NAMES = ("Ўзимиз (Бошланғич қолдиқ)", "O'zimiz (Boshlang'ich qoldiq)")
+
 from app.utils.enums import PaymentType, MovementType, MovementDirection
 
 
@@ -16,6 +20,23 @@ def create_purchase(
     db: Session, data: PurchaseCreate, user_id: int | None = None
 ) -> Purchase:
     """Create purchase, manage inventory batch, payments, and supplier debt."""
+    supplier = db.get(Partner, data.supplier_id)
+    if supplier is None:
+        raise ValueError("Етказиб берувчи топилмади")
+    if supplier.type not in ("supplier", "both"):
+        raise ValueError("Танланган ҳамкор етказиб берувчи эмас")
+    product = db.get(Product, data.product_id)
+    if product is None:
+        raise ValueError("Маҳсулот топилмади")
+    if not product.is_active:
+        raise ValueError("Нофаол маҳсулот учун приход қилиб бўлмайди")
+
+    total_amount = round(data.total_amount, 2)
+    paid_amount = round(sum(p.amount for p in data.payments), 2)
+    debt_amount = round(total_amount - paid_amount, 2)
+    if debt_amount < 0.01:
+        debt_amount = 0.0
+
     # 1. Create Purchase record
     purchase = Purchase(
         date=data.date,
@@ -23,9 +44,9 @@ def create_purchase(
         product_id=data.product_id,
         quantity_liters=data.quantity_liters,
         purchase_price_per_liter=data.purchase_price_per_liter,
-        total_amount=data.total_amount,
-        paid_amount=sum(p.amount for p in data.payments),
-        debt_amount=data.total_amount - sum(p.amount for p in data.payments),
+        total_amount=total_amount,
+        paid_amount=paid_amount,
+        debt_amount=debt_amount,
         note=data.note,
         created_by=user_id,
     )
@@ -51,9 +72,10 @@ def create_purchase(
             movement_type=MovementType.PURCHASE_PAYMENT,
             related_table="purchases",
             related_id=purchase.id,
-            note=f"Prixod to'lovi. Mahsulot: {data.product_id}, Miqdor: {data.quantity_liters}L",
+            note=f"Приход тўлови. Маҳсулот: {data.product_id}, Миқдор: {data.quantity_liters}Л",
             user_id=user_id,
             auto_commit=False,
+            on_date=data.date,
         )
 
     # 3. Create Supplier Debt if there is a remaining amount
@@ -108,9 +130,13 @@ def create_initial_fuel_stock(
     Bypasses balance deduction, supplier debt creation, and payments.
     Uses a dummy system supplier to ensure DB integrity without skewing reports.
     """
+    product = db.get(Product, data.product_id)
+    if product is None:
+        raise ValueError("Маҳсулот топилмади")
+
     # 1. Find or create dummy supplier
-    dummy_name = "O'zimiz (Boshlang'ich qoldiq)"
-    supplier = db.query(Partner).filter(Partner.name == dummy_name).first()
+    dummy_name = "Ўзимиз (Бошланғич қолдиқ)"
+    supplier = db.query(Partner).filter(Partner.name.in_(INITIAL_STOCK_SUPPLIER_NAMES)).first()
     if not supplier:
         supplier = Partner(
             name=dummy_name,
@@ -135,7 +161,7 @@ def create_initial_fuel_stock(
         total_amount=total_amount,
         paid_amount=total_amount,
         debt_amount=0.0,
-        note=data.note or "Boshlang'ich qoldiq",
+        note=data.note or "Бошланғич қолдиқ",
         created_by=user_id,
     )
     db.add(purchase)
@@ -181,9 +207,9 @@ def cancel_purchase(
     """
     purchase = db.query(Purchase).filter(Purchase.id == purchase_id).first()
     if not purchase:
-        raise ValueError("Prixod topilmadi")
+        raise ValueError("Приход топилмади")
     if purchase.status == "cancelled":
-        raise ValueError("Prixod allaqachon bekor qilingan")
+        raise ValueError("Приход аллақачон бекор қилинган")
 
     # Check Inventory: Find batches created by this purchase
     # Warning: If merged, checking by purchase_id might not cover everything,
@@ -204,7 +230,7 @@ def cancel_purchase(
     )
 
     if not batch:
-        raise ValueError("Omborda tegishli partiya topilmadi")
+        raise ValueError("Омборда тегишли партия топилмади")
         
     # Check if ANY of this purchase has been sold
     # If the batch's remaining quantity has decreased by more than what others might have added,
@@ -212,7 +238,7 @@ def cancel_purchase(
     # Since batches can merge, we specifically check if batch.remaining < purchase.quantity.
     # If remaining is less than what we bought, it means we definitely sold some of THIS purchase.
     if batch.remaining_quantity_liters < purchase.quantity_liters:
-        raise ValueError("Bu partiyadan sotuv qilingan. Prixodni o'chirish mumkin emas.")
+        raise ValueError("Бу партиядан сотув қилинган. Приходни ўчириш мумкин эмас.")
 
     # 1. Reverse Inventory
     batch.initial_quantity_liters -= purchase.quantity_liters
@@ -233,7 +259,7 @@ def cancel_purchase(
                 movement_type=MovementType.CANCELLATION,
                 related_table="purchases",
                 related_id=purchase.id,
-                note=f"Prixod bekor qilindi. Qaytarilgan to'lov.",
+                note=f"Приход бекор қилинди. Қайтарилган тўлов.",
                 user_id=user_id,
                 auto_commit=False,
             )
@@ -249,7 +275,7 @@ def cancel_purchase(
             # If we paid some of this debt later, cancelling is even more complex,
             # but for now we just cancel the debt record.
             if debt.paid_amount > 0:
-                 raise ValueError("Bu prixod bo'yicha qarz to'lovi qilingan. Oldin qarz to'lovini bekor qiling.")
+                 raise ValueError("Бу приход бўйича қарз тўлови қилинган. Олдин қарз тўловини бекор қилинг.")
             debt.status = "cancelled"
 
     # 4. Update Purchase status

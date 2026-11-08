@@ -17,17 +17,17 @@ import {
 
 import { formatMoneyInput, parseMoneyInput } from '../utils/formatters';
 
-const formatMoney = (n = 0) => new Intl.NumberFormat('uz-UZ').format(Math.round(n)) + ' so\'m';
+const formatMoney = (n = 0) => new Intl.NumberFormat('uz-UZ').format(Math.round(n)) + ' сўм';
 
 const MOVEMENT_LABELS = {
-  initial_balance: "Boshlang'ich balans",
-  purchase_payment: "Xarid to'lovi",
-  sale_payment: "Sotuv to'lovi",
-  customer_debt_payment: "Mijoz qarz to'lovi",
-  supplier_debt_payment: "Yetkazuvchi qarz to'lovi",
-  expense: 'Xarajat',
-  balance_adjustment: 'Balans tuzatish',
-  cancellation: 'Bekor qilish',
+  initial_balance: "Бошланғич баланс",
+  purchase_payment: "Харид тўлови",
+  sale_payment: "Сотув тўлови",
+  customer_debt_payment: "Мижоз қарз тўлови",
+  supplier_debt_payment: "Етказувчи қарз тўлови",
+  expense: 'Харажат',
+  balance_adjustment: 'Баланс тузатиш',
+  cancellation: 'Бекор қилиш',
 };
 
 export default function Dashboard() {
@@ -53,7 +53,7 @@ export default function Dashboard() {
 
   const submitInitialBalance = async () => {
     const numAmount = parseMoneyInput(initialForm.amount);
-    if (!numAmount || numAmount <= 0) return setInitialError("Summani to'g'ri kiriting.");
+    if (!numAmount || numAmount <= 0) return setInitialError("Суммани тўғри киритинг.");
     setInitialLoading(true);
     setInitialError('');
     try {
@@ -65,17 +65,17 @@ export default function Dashboard() {
       setInitialForm({ date: new Date().toISOString().slice(0, 10), payment_type: 'cash', amount: '', note: '' });
       fetchDashboard();
     } catch (e) {
-      setInitialError(e.response?.data?.detail || 'Xato yuz berdi.');
+      setInitialError(e.response?.data?.detail || 'Хато юз берди.');
     } finally {
       setInitialLoading(false);
     }
   };
 
   if (loading) {
-    return <div className="page"><p className="empty-message">Yuklanmoqda...</p></div>;
+    return <div className="page"><p className="empty-message">Юкланмоқда...</p></div>;
   }
   if (!data) {
-    return <div className="page"><p className="empty-message">Ma'lumot yuklanmadi</p></div>;
+    return <div className="page"><p className="empty-message">Маълумот юкланмади</p></div>;
   }
 
   const { balances, today, debts, recent_movements } = data;
@@ -84,35 +84,36 @@ export default function Dashboard() {
   return (
     <div className="page">
       <div className="page-header">
-        <h1 className="page-title">Bosh sahifa</h1>
+        <h1 className="page-title">Бош саҳифа</h1>
         <button 
-            className="btn btn-primary"
+            className="write-action btn btn-primary"
             onClick={() => { setShowInitialBalanceModal(true); setInitialError(''); }}
         >
-            + O'zida bor pul qo'shish
+            + Ўзида бор пул қўшиш
         </button>
       </div>
 
       {/* Balance cards */}
       <div className="stat-grid">
         <StatCard
-          label="Umumiy balans"
+          label="Умумий баланс"
           value={formatMoney(umumiyBalans)}
           icon={Wallet}
           color={umumiyBalans >= 0 ? "success" : "danger"}
           valueColor={umumiyBalans >= 0 ? "green" : "red"}
-          sub="Tafsilot uchun bosing"
+          sub="Тафсилот учун босинг"
+          variant="hero"
           onClick={() => setShowBalanceBreakdown(true)}
         />
         <StatCard
-          label="Naqd"
+          label="Нақд"
           value={formatMoney(balances.cash)}
           icon={Banknote}
           color={balances.cash >= 0 ? "success" : "danger"}
           valueColor={balances.cash >= 0 ? "green" : "red"}
         />
         <StatCard
-          label="Perechisleniya"
+          label="Перечисления"
           value={formatMoney(balances.bank_transfer)}
           icon={CreditCard}
           color={balances.bank_transfer >= 0 ? "info" : "danger"}
@@ -120,26 +121,26 @@ export default function Dashboard() {
         />
       </div>
 
-      <div className="section-label">Bugun va Ombordagi holat</div>
+      <div className="section-label">Бугун ва Омбордаги ҳолат</div>
       <div className="stat-grid">
         <StatCard
-          label="Ombordagi yoqilg'i qiymati"
+          label="Омбордаги ёқилғи қиймати"
           value={formatMoney(data.inventory_value || 0)}
           icon={ShoppingCart}
           color="info"
         />
         <StatCard
-          label="Bugungi tushum (Kirim)"
+          label="Бугунги тушум (Кирим)"
           value={formatMoney(today.income_amount)}
-          sub={`${today.sale_count} ta sotuv`}
+          sub={`${today.sale_count} та сотув`}
           icon={TrendingUp}
           color="success"
           valueColor="green"
         />
         <StatCard
-          label="Bugungi xarajat"
+          label="Бугунги харажат"
           value={formatMoney(today.expense_amount)}
-          sub={`${today.expense_count} ta operatsiya`}
+          sub={`${today.expense_count} та операция`}
           icon={Receipt}
           color="danger"
           valueColor="red"
@@ -147,17 +148,17 @@ export default function Dashboard() {
       </div>
 
       {/* Debts */}
-      <div className="section-label">Qarzlar</div>
+      <div className="section-label">Қарзлар</div>
       <div className="stat-grid">
         <StatCard
-          label="Mijozlar qarzi (jami)"
+          label="Мижозлар қарзи (жами)"
           value={formatMoney(debts.customer_total)}
           icon={Users}
           color="warning"
           valueColor="green"
         />
         <StatCard
-          label="Bizning qarzlar (jami)"
+          label="Бизнинг қарзлар (жами)"
           value={formatMoney(debts.supplier_total)}
           icon={AlertCircle}
           color="danger"
@@ -167,20 +168,20 @@ export default function Dashboard() {
 
       {/* Recent movements */}
       <div className="card">
-        <h2 className="card-title">So'nggi pul harakatlari</h2>
+        <h2 className="card-title">Сўнгги пул ҳаракатлари</h2>
         {recent_movements.length === 0 ? (
-          <p className="empty-message">Hozircha pul harakatlari yo'q</p>
+          <p className="empty-message">Ҳозирча пул ҳаракатлари йўқ</p>
         ) : (
           <div style={{ overflowX: 'auto' }}>
             <table className="data-table">
               <thead>
                 <tr>
-                  <th>Sana</th>
-                  <th>Tur</th>
-                  <th>To'lov turi</th>
-                  <th>Yo'nalish</th>
-                  <th style={{ textAlign: 'right' }}>Summa</th>
-                  <th>Izoh</th>
+                  <th>Сана</th>
+                  <th>Тур</th>
+                  <th>Тўлов тури</th>
+                  <th>Йўналиш</th>
+                  <th style={{ textAlign: 'right' }}>Сумма</th>
+                  <th>Изоҳ</th>
                 </tr>
               </thead>
               <tbody>
@@ -188,12 +189,12 @@ export default function Dashboard() {
                   <tr key={m.id}>
                     <td style={{ fontSize: '13px' }}>{new Date(m.date).toLocaleDateString('ru-RU')}</td>
                     <td style={{ fontSize: '13px' }}>{MOVEMENT_LABELS[m.movement_type] || m.movement_type}</td>
-                    <td>{m.payment_type === 'cash' ? 'Naqd' : 'Perechisleniya'}</td>
+                    <td>{m.payment_type === 'cash' ? 'Нақд' : 'Перечисления'}</td>
                     <td>
                       <span
                         className={`badge ${m.direction === 'income' ? 'badge--income' : 'badge--outgoing'}`}
                       >
-                        {m.direction === 'income' ? 'Kirim' : 'Chiqim'}
+                        {m.direction === 'income' ? 'Кирим' : 'Чиқим'}
                       </span>
                     </td>
                     <td style={{ textAlign: 'right', fontWeight: 700 }}>{formatMoney(m.amount)}</td>
@@ -210,41 +211,41 @@ export default function Dashboard() {
         <div className="modal-overlay" onClick={() => setShowInitialBalanceModal(false)}>
             <div className="modal" onClick={(e) => e.stopPropagation()}>
                 <div className="modal-header">
-                    <h2>O'zida bor pul qo'shish (Boshlang'ich balans)</h2>
+                    <h2>Ўзида бор пул қўшиш (Бошланғич баланс)</h2>
                     <button className="modal-close" onClick={() => setShowInitialBalanceModal(false)}>✕</button>
                 </div>
                 <div className="modal-body">
                     <div className="form-group">
-                        <label>Sana</label>
+                        <label>Сана</label>
                         <input type="date" className="form-control" value={initialForm.date} onChange={(e) => setInitialForm({ ...initialForm, date: e.target.value })} />
                     </div>
                     <div className="form-group">
-                        <label>To'lov turi</label>
+                        <label>Тўлов тури</label>
                         <select className="form-control" value={initialForm.payment_type} onChange={(e) => setInitialForm({ ...initialForm, payment_type: e.target.value })}>
-                            <option value="cash">Naqd</option>
-                            <option value="bank_transfer">Perechisleniya</option>
+                            <option value="cash">Нақд</option>
+                            <option value="bank_transfer">Перечисления</option>
                         </select>
                     </div>
                     <div className="form-group">
-                        <label>Summa (so'm)</label>
+                        <label>Сумма (сўм)</label>
                         <input 
                             type="text" 
                             className="form-control" 
                             value={initialForm.amount} 
                             onChange={(e) => setInitialForm({ ...initialForm, amount: formatMoneyInput(e.target.value) })} 
-                            placeholder="Masalan: 10 000 000" 
+                            placeholder="Масалан: 10 000 000" 
                         />
                     </div>
                     <div className="form-group">
-                        <label>Izoh (ixtiyoriy)</label>
+                        <label>Изоҳ (ихтиёрий)</label>
                         <input type="text" className="form-control" value={initialForm.note} onChange={(e) => setInitialForm({ ...initialForm, note: e.target.value })} />
                     </div>
                     {initialError && <p style={{ color: 'var(--danger)', marginTop: '0.5rem' }}>{initialError}</p>}
                 </div>
                 <div className="modal-footer">
-                    <button className="btn btn-secondary" onClick={() => setShowInitialBalanceModal(false)}>Bekor qilish</button>
+                    <button className="btn btn-secondary" onClick={() => setShowInitialBalanceModal(false)}>Бекор қилиш</button>
                     <button className="btn btn-primary" onClick={submitInitialBalance} disabled={initialLoading}>
-                        {initialLoading ? 'Saqlanmoqda...' : 'Saqlash'}
+                        {initialLoading ? 'Сақланмоқда...' : 'Сақлаш'}
                     </button>
                 </div>
             </div>
@@ -255,37 +256,37 @@ export default function Dashboard() {
         <div className="modal-overlay" onClick={() => setShowBalanceBreakdown(false)}>
             <div className="modal" onClick={(e) => e.stopPropagation()} style={{ maxWidth: '400px' }}>
                 <div className="modal-header">
-                    <h2>Umumiy balans formulasi</h2>
+                    <h2>Умумий баланс формуласи</h2>
                     <button className="modal-close" onClick={() => setShowBalanceBreakdown(false)}>✕</button>
                 </div>
                 <div className="modal-body" style={{ lineHeight: '2' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <span>Naqd:</span>
+                        <span>Нақд:</span>
                         <span style={{ color: balances.cash >= 0 ? 'var(--success)' : 'var(--danger)' }}>{formatMoney(balances.cash)}</span>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <span>Perechisleniya:</span>
+                        <span>Перечисления:</span>
                         <span style={{ color: balances.bank_transfer >= 0 ? 'var(--success)' : 'var(--danger)' }}>{formatMoney(balances.bank_transfer)}</span>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <span>Ombor qiymati:</span>
+                        <span>Омбор қиймати:</span>
                         <span style={{ color: 'var(--success)' }}>+ {formatMoney(data.inventory_value || 0)}</span>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <span>Mijozlar qarzdorligi:</span>
+                        <span>Мижозлар қарздорлиги:</span>
                         <span style={{ color: 'var(--success)' }}>+ {formatMoney(debts.customer_total)}</span>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border)', paddingBottom: '0.5rem', marginBottom: '0.5rem' }}>
-                        <span>Bizning qarzlar:</span>
+                        <span>Бизнинг қарзлар:</span>
                         <span style={{ color: 'var(--danger)' }}>- {formatMoney(debts.supplier_total)}</span>
                     </div>
                     <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 'bold', fontSize: '1.1rem' }}>
-                        <span>Umumiy balans:</span>
+                        <span>Умумий баланс:</span>
                         <span style={{ color: umumiyBalans >= 0 ? 'var(--success)' : 'var(--danger)' }}>{formatMoney(umumiyBalans)}</span>
                     </div>
                 </div>
                 <div className="modal-footer">
-                    <button className="btn btn-secondary" onClick={() => setShowBalanceBreakdown(false)}>Yopish</button>
+                    <button className="btn btn-secondary" onClick={() => setShowBalanceBreakdown(false)}>Ёпиш</button>
                 </div>
             </div>
         </div>
@@ -295,10 +296,10 @@ export default function Dashboard() {
 }
 
 /* ── Reusable StatCard ── */
-function StatCard({ label, value, sub, icon: Icon, color = 'accent', valueColor, onClick }) {
+function StatCard({ label, value, sub, icon: Icon, color = 'accent', valueColor, onClick, variant }) {
   const valueClass = valueColor ? `stat-card-value stat-card-value--${valueColor}` : 'stat-card-value';
   return (
-    <div className="stat-card" onClick={onClick} style={{ cursor: onClick ? 'pointer' : 'default' }}>
+    <div className={`stat-card${variant ? ` stat-card--${variant}` : ''}`} onClick={onClick} style={{ cursor: onClick ? 'pointer' : 'default' }}>
       <div className={`stat-card-icon stat-card-icon--${color}`}>
         <Icon size={22} strokeWidth={2.2} />
       </div>

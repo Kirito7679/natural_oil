@@ -18,13 +18,14 @@ class UserCreate(BaseModel):
     password: str
     confirm_password: str
     is_active: bool = True
+    role: UserRole = UserRole.ADMIN
 
     @field_validator("name")
     @classmethod
     def validate_name(cls, v: str) -> str:
         v = v.strip()
         if not v:
-            raise ValueError("Ism bo'sh bo'lishi mumkin emas")
+            raise ValueError("Исм бўш бўлиши мумкин эмас")
         return v
 
     @field_validator("phone")
@@ -32,20 +33,20 @@ class UserCreate(BaseModel):
     def validate_phone(cls, v: str) -> str:
         v = v.strip()
         if not v:
-            raise ValueError("Login bo'sh bo'lishi mumkin emas")
+            raise ValueError("Логин бўш бўлиши мумкин эмас")
         return v
 
     @field_validator("password")
     @classmethod
     def validate_password(cls, v: str) -> str:
         if len(v) < 6:
-            raise ValueError("Parol kamida 6 ta belgidan iborat bo'lishi kerak.")
+            raise ValueError("Парол камида 6 та белгидан иборат бўлиши керак.")
         return v
 
     @model_validator(mode="after")
     def validate_passwords_match(self):
         if self.password != self.confirm_password:
-            raise ValueError("Parollar mos emas.")
+            raise ValueError("Пароллар мос эмас.")
         return self
 
 
@@ -53,6 +54,7 @@ class UserUpdate(BaseModel):
     name: str | None = None
     phone: str | None = None
     is_active: bool | None = None
+    role: UserRole | None = None
 
 
 class PasswordChange(BaseModel):
@@ -64,13 +66,13 @@ class PasswordChange(BaseModel):
     @classmethod
     def validate_new_password(cls, v: str) -> str:
         if len(v) < 6:
-            raise ValueError("Yangi parol kamida 6 ta belgidan iborat bo'lishi kerak.")
+            raise ValueError("Янги парол камида 6 та белгидан иборат бўлиши керак.")
         return v
 
     @model_validator(mode="after")
     def validate_passwords_match(self):
         if self.new_password != self.confirm_password:
-            raise ValueError("Parollar mos emas.")
+            raise ValueError("Пароллар мос эмас.")
         return self
 
 
@@ -82,13 +84,13 @@ class PasswordReset(BaseModel):
     @classmethod
     def validate_new_password(cls, v: str) -> str:
         if len(v) < 6:
-            raise ValueError("Yangi parol kamida 6 ta belgidan iborat bo'lishi kerak.")
+            raise ValueError("Янги парол камида 6 та белгидан иборат бўлиши керак.")
         return v
 
     @model_validator(mode="after")
     def validate_passwords_match(self):
         if self.new_password != self.confirm_password:
-            raise ValueError("Parollar mos emas.")
+            raise ValueError("Пароллар мос эмас.")
         return self
 
 

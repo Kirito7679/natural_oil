@@ -14,7 +14,7 @@ class ExpenseCategoryCreate(BaseModel):
     def validate_name(cls, v: str) -> str:
         v = v.strip()
         if not v:
-            raise ValueError("Kategoriya nomi bo'sh bo'lishi mumkin emas")
+            raise ValueError("Категория номи бўш бўлиши мумкин эмас")
         return v
 
 
@@ -45,7 +45,7 @@ class ExpenseCreate(BaseModel):
     @classmethod
     def validate_amount(cls, v: float) -> float:
         if v <= 0:
-            raise ValueError("Summa 0 dan katta bo'lishi kerak.")
+            raise ValueError("Сумма 0 дан катта бўлиши керак.")
         return v
 
 
