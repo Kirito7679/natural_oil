@@ -1,7 +1,7 @@
 #!/bin/bash
-# Выкатка на VDS: подтянуть код из /opt/naturaloil/repo.git (туда пушим с
-# машины: git push vds main), пересобрать образы, перезапустить.
-# Запускать на сервере: /opt/naturaloil/deploy.sh   (первый раз — см. README.md)
+# Выкатка на VDS: подтянуть код с GitHub в src/, пересобрать образы,
+# перезапустить. Репозиторий публичный, ключи на сервере не нужны.
+# Запускать: ssh evalon-vds "/opt/naturaloil/deploy.sh"  (первый раз — README.md)
 set -euo pipefail
 cd "$(dirname "$0")"
 

@@ -15,8 +15,7 @@
   docker-compose.yml   копия infra/vds/docker-compose.yml
   deploy.sh            выкатка: git pull из repo.git, пересборка, перезапуск
   backup.sh            ночной бэкап (crontab 04:15)
-  repo.git             голый репозиторий — сюда пушим с рабочей машины
-  src/                 рабочая копия main, из неё собираются образы
+  src/                 клон репозитория с GitHub, из него собираются образы
   backups/daily/       копии базы, 14 дней
 ```
 
@@ -39,42 +38,47 @@
 
 ## Первая установка
 
-Перед началом — запас на машине (диск был занят на ~85 %):
+Всё выполняется **с рабочей машины через `ssh evalon-vds`** — на сервер
+заходить не нужно, локальный клон репозитория тоже не нужен: сервер
+скачивает код с GitHub сам (репозиторий публичный).
+
+> Команды написаны для **cmd.exe**. В PowerShell 5.1 нет `&&` (разделять
+> `;`), а `$(...)` он попытается раскрыть у себя — поэтому всё серверное
+> держим внутри кавычек `ssh "..."`, тогда и `&&`, и `$(...)` разбирает
+> уже bash на сервере.
+>
+> Только алиас `evalon-vds`. Прямой `root@46.8.195.117` отвечает
+> Permission denied: вход не под root и ключ подставляется лишь для
+> `Host evalon-vds` (в `~/.ssh/config` стоит `IdentitiesOnly`).
+
+### 1. Место на диске
 
 ```bash
 ssh evalon-vds "df -h / ; free -m ; docker system df"
 ```
 
-Если свободно меньше 3 ГБ — сначала чистка или расширение диска, потом выкатка.
-
-### 1. Каталог и голый репозиторий — на сервере
+Нужно свободно хотя бы 3 ГБ. Основной едок — кэш сборки Docker, общий на
+все проекты сервера. Сколько из него можно освободить, показывает колонка
+RECLAIMABLE строки Build Cache:
 
 ```bash
-ssh evalon-vds "sudo mkdir -p /opt/naturaloil/backups/daily && sudo chown -R \$USER:\$USER /opt/naturaloil && git init --bare -b main /opt/naturaloil/repo.git"
+ssh evalon-vds "docker builder prune -f"
 ```
 
-### 2. Отправить код с рабочей машины
+Чистка безопасна: удаляются только промежуточные слои прошлых сборок,
+работающие контейнеры и образы не трогаются. Следующая сборка у соседей
+просто пройдёт дольше.
 
-В PowerShell, в папке проекта. Коммит с инфраструктурой лежит на ветке
-`claude/elegant-cannon-2pfm1s` на GitHub; `FETCH_HEAD` позволяет не
-переключать ветку и не трогать рабочие файлы:
+### 2. Каталог на сервере
 
 ```bash
-git remote add vds evalon-vds:/opt/naturaloil/repo.git
+ssh evalon-vds "sudo install -d -o $(id -un) -g $(id -gn) /opt/naturaloil /opt/naturaloil/backups /opt/naturaloil/backups/daily"
 ```
 
-```bash
-git fetch origin claude/elegant-cannon-2pfm1s; git push vds FETCH_HEAD:refs/heads/main
-```
-
-> Remote только через алиас `evalon-vds`. Прямой адрес
-> `ubuntu@46.8.195.117:...` падает с Permission denied: в `~/.ssh/config`
-> стоит `IdentitiesOnly` и ключ не подставляется.
-
-### 3. Рабочая копия, секреты, первая выкатка — на сервере
+### 3. Код, секреты, первая выкатка
 
 ```bash
-ssh evalon-vds "git clone /opt/naturaloil/repo.git /opt/naturaloil/src && cp /opt/naturaloil/src/infra/vds/deploy.sh /opt/naturaloil/src/infra/vds/backup.sh /opt/naturaloil/ && chmod +x /opt/naturaloil/deploy.sh /opt/naturaloil/backup.sh"
+ssh evalon-vds "git clone -b claude/elegant-cannon-2pfm1s https://github.com/Kirito7679/natural_oil.git /opt/naturaloil/src && cp /opt/naturaloil/src/infra/vds/deploy.sh /opt/naturaloil/src/infra/vds/backup.sh /opt/naturaloil/ && chmod +x /opt/naturaloil/deploy.sh /opt/naturaloil/backup.sh"
 ```
 
 ```bash
@@ -90,8 +94,12 @@ ssh evalon-vds "/opt/naturaloil/deploy.sh"
 ### 4. Ночной бэкап
 
 ```bash
-ssh evalon-vds "echo '15 4 * * * ubuntu /opt/naturaloil/backup.sh >> /opt/naturaloil/backups/backup.log 2>&1' | sudo tee /etc/cron.d/naturaloil"
+ssh evalon-vds "crontab -l 2>/dev/null | grep -q naturaloil/backup.sh || (crontab -l 2>/dev/null; echo '15 4 * * * /opt/naturaloil/backup.sh >> /opt/naturaloil/backups/backup.log 2>&1') | crontab -"
 ```
+
+Задание кладётся в crontab текущего пользователя, а не в `/etc/cron.d`:
+там не нужна колонка с именем пользователя, и команду можно выполнить
+повторно — второй строки не появится.
 
 Время своё: 03:30 занято Evalon, 03:45 — Natural Print.
 
@@ -107,16 +115,22 @@ ssh evalon-vds "curl -fsS -o /dev/null -w '%{http_code}\n' http://naturaloil-web
 
 ## Обновление
 
+Код ушёл в GitHub — на сервере одна команда:
+
 ```bash
-git push origin main; git push vds main; ssh evalon-vds "/opt/naturaloil/deploy.sh"
+ssh evalon-vds "/opt/naturaloil/deploy.sh"
 ```
 
-В PowerShell 5.1 **не работает `&&`** — разделять `;`. Всё, что должно
-выполниться на сервере, класть внутрь кавычек `ssh "..."`, тогда `&&`
-разбирает уже bash.
+`deploy.sh` делает `git pull` в `src/`, обновляет compose и маршруты
+Caddy, пересобирает образы и перезапускает контейнеры.
 
-Сервер тянет код из `repo.git`, **не из GitHub**. Забыли `git push vds` —
-`git -C src pull` скажет «Already up to date», и выкатится старое.
+Сервер тянет ту ветку, которую склонировали (`claude/elegant-cannon-2pfm1s`).
+Если изменения ушли в другую ветку — `git -C src pull` скажет «Already up
+to date», и выкатится старое. Переключить ветку:
+
+```bash
+ssh evalon-vds "git -C /opt/naturaloil/src fetch origin && git -C /opt/naturaloil/src checkout main"
+```
 
 ## Диагностика
 
