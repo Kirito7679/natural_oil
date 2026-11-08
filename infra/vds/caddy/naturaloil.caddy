@@ -1,0 +1,30 @@
+# Маршруты Natural Oil для общего Caddy Evalon.
+# Копия лежит в /opt/evalon/caddy-sites/naturaloil.caddy, применяется
+# /opt/evalon/caddy-apply.sh. Контейнеры доступны по именам через сеть edge.
+#
+# Больше в /opt/evalon НИЧЕГО не трогаем.
+
+# ------------------------------------------------- временный адрес (без домена)
+# Работает сразу, сертификат Let's Encrypt Caddy выпустит сам.
+# Имя выбрано так, чтобы не пересечься с Natural Print (shop/admin/site/erp/erp2/ai).
+oil.46-8-195-117.sslip.io {
+	encode zstd gzip
+	reverse_proxy naturaloil-web-1:80
+}
+
+# ---------------------------------------------------------------- боевой домен
+# Раскомментировать, когда в Cloudflare появится запись A на 46.8.195.117.
+#
+# При ПРОКСИРОВАНИИ Cloudflare (оранжевое облачко) режим SSL/TLS должен быть
+# «Full» (не Flexible и не Full strict), и строка `tls internal` обязательна:
+# наружу сертификат показывает Cloudflare, а до нас ходит по HTTPS и принимает
+# наш внутренний сертификат.
+#
+# Если проксирование выключено (серое облачко, DNS only) — убрать `tls internal`,
+# и Caddy сам выпустит сертификат Let's Encrypt.
+#
+# naturaloilerp.uz, www.naturaloilerp.uz {
+# 	tls internal
+# 	encode zstd gzip
+# 	reverse_proxy naturaloil-web-1:80
+# }

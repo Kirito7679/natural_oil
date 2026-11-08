@@ -1,0 +1,37 @@
+# Контекст сборки — корень репозитория (compose: context ./src).
+# Оба образа (Dockerfile.api, Dockerfile.web) берут только backend/,
+# frontend/ и infra/vds/ — всё остальное сюда попадать не должно.
+
+.git
+.gitattributes
+.gitignore
+
+# базы клиента в образ не кладутся — доставка данных отдельной задачей
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+
+# секреты: переменные задаёт docker-compose.yml из /opt/naturaloil/.env
+.env
+.env.local
+.env.production
+backend/.env
+frontend/.env
+
+backend/.venv/
+backend/tests/
+**/__pycache__/
+**/*.py[cod]
+**/.pytest_cache/
+
+frontend/node_modules/
+frontend/dist/
+**/.vite/
+
+# помощники для Windows и локального запуска — на сервере не нужны
+*.bat
+tools/
+deploy/
+NOP-logo-transparent.png

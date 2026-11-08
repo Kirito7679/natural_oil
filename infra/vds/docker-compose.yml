@@ -1,0 +1,75 @@
+# Natural Oil ERP на VDS 46.8.195.117 — рядом с Evalon и Natural Print.
+#
+#   api — FastAPI + SQLite на томе naturaloil_api-data
+#   web — nginx: статика панели + прокси /api
+#
+# Наружу порты НЕ публикуются: HTTPS даёт общий Caddy Evalon через внешнюю
+# сеть edge (маршруты — infra/vds/caddy/naturaloil.caddy). Секреты — в .env
+# рядом (env.template, заполняет infra/vds/setup-env.sh).
+#
+# Лимиты памяти и CPU обязательны на общем сервере: api 256M + web 64M = 320M.
+# У соседей уже занято ~2 ГБ (Natural Print) — следим за суммой.
+#
+#   docker compose up -d --build
+#   docker compose logs -f api
+
+name: naturaloil
+
+services:
+  api:
+    build:
+      context: ./src
+      dockerfile: infra/vds/Dockerfile.api
+    image: naturaloil/api:latest
+    restart: unless-stopped
+    networks: [default]
+    mem_limit: 256m
+    cpus: 0.5
+    environment:
+      # четыре слеша = абсолютный путь внутри контейнера
+      DATABASE_URL: sqlite:////app/data/natural_oil.db
+      # Обязательные: пустой ключ подписи хуже отсутствующего, поэтому
+      # compose упадёт ДО того, как тронет работающие контейнеры соседей.
+      SECRET_KEY: ${NOP_SECRET_KEY:?нужен NOP_SECRET_KEY в .env (подпись JWT)}
+      ACCESS_TOKEN_EXPIRE_MINUTES: ${NOP_TOKEN_MINUTES:-480}
+      # Основной пользователь. Создаётся ТОЛЬКО если база пуста; на базе с
+      # данными seed его не трогает и пароль не меняет.
+      MAIN_USER_NAME: ${NOP_MAIN_USER_NAME:-Хумоюн}
+      MAIN_USER_LOGIN: ${NOP_MAIN_USER_LOGIN:-95 810 06 00}
+      MAIN_USER_PASSWORD: ${NOP_MAIN_USER_PASSWORD:?нужен NOP_MAIN_USER_PASSWORD в .env (пароль при первом старте)}
+      FRONTEND_URL: ${NOP_FRONTEND_URL:-https://naturaloilerp.uz}
+    volumes:
+      - api-data:/app/data
+    healthcheck:
+      test: ["CMD-SHELL", "python -c \"import urllib.request as u; u.urlopen('http://127.0.0.1:8010/api/health', timeout=3)\""]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+
+  web:
+    build:
+      context: ./src
+      dockerfile: infra/vds/Dockerfile.web
+    image: naturaloil/web:latest
+    restart: unless-stopped
+    # nginx стартует и без живого api (resolver + переменная в nginx.conf),
+    # но ждём healthy, чтобы первый же запрос не упёрся в 502.
+    depends_on:
+      api: { condition: service_healthy }
+    networks: [default, edge]
+    mem_limit: 64m
+    cpus: 0.25
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+
+networks:
+  default:
+  edge:
+    external: true
+
+volumes:
+  api-data:

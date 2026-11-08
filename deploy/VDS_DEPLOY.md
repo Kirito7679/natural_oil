@@ -1,5 +1,15 @@
 # Natural Oil ERP — VDS serverga yuklash
 
+> ⚠️ **Faqat bo'sh server uchun.** Bu yo'riqnoma va `deploy/install.sh`
+> serverda boshqa hech narsa ishlamayotganini kutadi: o'zining Caddy'sini
+> 80/443 portlariga qo'yadi, `/etc/caddy/Caddyfile` ni qayta yozadi va ufw
+> yoqadi.
+>
+> **46.8.195.117 serveri uchun buni ISHLATMANG** — u yerda Evalon va
+> Natural Print ishlayapti, ular ham o'sha portlarda. O'sha server uchun
+> alohida yo'riqnoma bor: [`infra/vds/README.md`](../infra/vds/README.md)
+> (Docker + umumiy Caddy orqali, qo'shnilarga tegmaydi).
+
 Server talabi: **Ubuntu 24.04**, root huquqi. O'rnatuvchi (`deploy/install.sh`)
 Caddy + HTTPS, systemd xizmati, ufw va kunlik backup'ni o'zi sozlaydi.
 

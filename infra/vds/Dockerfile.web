@@ -1,0 +1,25 @@
+# Natural Oil ERP — единственная точка входа naturaloilerp.uz:
+# статика панели (Vite+React) и прокси к API.
+#
+#   /          — frontend/ (SPA, react-router)
+#   /api/...   — api:8010
+FROM node:20-alpine AS build
+
+# На сервере свободно около 1 ГБ: без ограничителя V8 берёт четверть всей
+# памяти машины и сборка может упасть по OOM (грабли Natural Print).
+ENV NODE_OPTIONS=--max-old-space-size=512
+
+WORKDIR /build
+
+COPY frontend/package.json frontend/package-lock.json ./
+RUN npm ci --no-audit --no-fund
+
+COPY frontend/ ./
+# VITE_API_URL не задаём: клиент сам берёт относительный /api
+# (frontend/src/api/client.js), и панель работает на любом домене.
+RUN npm run build
+
+FROM nginx:1.27-alpine
+
+COPY infra/vds/nginx.conf /etc/nginx/conf.d/default.conf
+COPY --from=build /build/dist/ /usr/share/nginx/html/
