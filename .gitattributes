@@ -1,2 +1,8 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# Windows helper scripts must keep CRLF or cmd.exe mis-parses them
+*.bat text eol=crlf
+
+# Shell scripts run on the Linux server must always be LF
+*.sh text eol=lf
