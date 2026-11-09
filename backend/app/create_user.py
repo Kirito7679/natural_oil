@@ -12,9 +12,11 @@ Serverda ishga tushirish:
       -e NOP_USER_ROLE=dev \\
       api python -m app.create_user
 
-Shunday login allaqachon bo'lsa — ismi, roli va paroli yangilanadi
+Shunday login allaqachon bo'lsa — faqat berilgan maydonlar yangilanadi
 (normalize_login: "+998900350151", "90 035 01 51" va "900350151" — bitta login).
-NOP_USER_ROLE berilmasa, dev yaratiladi.
+Parolni tiklash uchun NOP_USER_LOGIN va NOP_USER_PASSWORD kifoya: roli va
+ismi tegilmaydi. Yangi foydalanuvchiga NOP_USER_NAME majburiy, NOP_USER_ROLE
+berilmasa — dev.
 """
 import os
 import sys
@@ -32,9 +34,9 @@ def main() -> int:
     name = (os.getenv("NOP_USER_NAME") or "").strip()
     login = (os.getenv("NOP_USER_LOGIN") or "").strip()
     password = os.getenv("NOP_USER_PASSWORD") or ""
-    role = (os.getenv("NOP_USER_ROLE") or UserRole.DEV.value).strip()
+    role = (os.getenv("NOP_USER_ROLE") or "").strip()
 
-    missing = [k for k, v in (("NOP_USER_NAME", name), ("NOP_USER_LOGIN", login),
+    missing = [k for k, v in (("NOP_USER_LOGIN", login),
                               ("NOP_USER_PASSWORD", password)) if not v]
     if missing:
         print("Kerakli o'zgaruvchilar berilmagan: " + ", ".join(missing), file=sys.stderr)
@@ -43,7 +45,7 @@ def main() -> int:
         print(f"Parol kamida {MIN_PASSWORD_LEN} ta belgidan iborat bo'lishi kerak", file=sys.stderr)
         return 2
     allowed = [r.value for r in UserRole]
-    if role not in allowed:
+    if role and role not in allowed:
         print(f"Noma'lum rol: {role}. Mumkin: {', '.join(allowed)}", file=sys.stderr)
         return 2
 
@@ -52,13 +54,20 @@ def main() -> int:
     try:
         user = find_user_by_login(db, login)
         if user is None:
-            user = User(name=name, phone=login, role=role,
+            if not name:
+                print("Yangi foydalanuvchi uchun NOP_USER_NAME kerak", file=sys.stderr)
+                return 2
+            user = User(name=name, phone=login, role=role or UserRole.DEV.value,
                         password_hash=hash_password(password), is_active=True)
             db.add(user)
             action = "yaratildi"
         else:
-            user.name = name
-            user.role = role
+            # Berilmagan maydonlarga tegmaymiz: parolni tiklaganda roli va ismi
+            # o'zgarib ketmasligi kerak (masalan, direktor dev bo'lib qolmasin).
+            if name:
+                user.name = name
+            if role:
+                user.role = role
             user.is_active = True
             user.password_hash = hash_password(password)
             action = "yangilandi"
