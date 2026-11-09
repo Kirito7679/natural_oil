@@ -22,7 +22,14 @@ services:
       dockerfile: infra/vds/Dockerfile.api
     image: naturaloil/api:latest
     restart: unless-stopped
-    networks: [default]
+    # Псевдоним обязателен. Контейнер web подключён и к нашей сети, и к общей
+    # edge, а встроенный DNS Docker ищет имя во всех сетях контейнера. В edge
+    # у соседей уже есть контейнер с именем `api`, и короткое имя уводило
+    # nginx к нему → connect() failed (111) → 502 на каждом /api/*.
+    # `naturaloil-api` существует только в нашей сети, поэтому однозначен.
+    networks:
+      default:
+        aliases: [naturaloil-api]
     mem_limit: 256m
     cpus: 0.5
     environment:

@@ -138,6 +138,31 @@ ssh evalon-vds "git -C /opt/naturaloil/src fetch origin && git -C /opt/naturaloi
 ssh evalon-vds "cd /opt/naturaloil && docker compose ps && docker compose logs --tail 50 api"
 ```
 
+### 502 на всех `/api/*`, при этом сайт открывается
+
+Было 09.11.2026. Признак: `api` — `Up (healthy)`, в его логе **только
+`/api/health`** и ни одного реального запроса, а в логе `web`:
+
+```
+connect() failed (111: Connection refused) while connecting to upstream
+```
+
+Причина: `web` подключён и к нашей сети, и к общей `edge`, а встроенный DNS
+Docker ищет имя во всех сетях контейнера. У соседей в `edge` есть свой
+контейнер с именем **`api`**, и короткое имя уводило nginx к нему.
+
+Поэтому к нашему backend обращаемся только по псевдониму **`naturaloil-api`**
+(задан в `docker-compose.yml`, существует только в нашей сети). Короткие
+имена вроде `api`, `db`, `web` в этой сети использовать нельзя.
+
+Проверить, куда резолвится имя:
+
+```bash
+ssh evalon-vds "docker exec naturaloil-web-1 getent hosts naturaloil-api; docker exec naturaloil-api-1 hostname -i"
+```
+
+Оба адреса должны совпасть.
+
 ## Данные
 
 База — SQLite на томе `naturaloil_api-data`, в git не кладётся
