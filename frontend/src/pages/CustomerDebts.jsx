@@ -5,6 +5,8 @@ import { useState, useEffect } from 'react';
 import { Eye } from 'lucide-react';
 import client from '../api/client';
 import { downloadExcel } from '../utils/excelDownload';
+import MutualSettlements from '../components/MutualSettlements';
+import { useAuth } from '../context/AuthContext';
 import { parseMoneyInput, formatMoneyInput } from '../utils/formatters';
 
 const formatMoney = (n) =>
@@ -13,6 +15,8 @@ const formatMoney = (n) =>
 const formatDate = (d) => (d ? new Date(d).toLocaleDateString('ru-RU') : '—');
 
 export default function CustomerDebts() {
+    const { isAdmin } = useAuth();
+    const [refreshKey, setRefreshKey] = useState(0);
     const [debts, setDebts] = useState([]);
     const [total, setTotal] = useState(0);
     const [loading, setLoading] = useState(true);
@@ -51,6 +55,19 @@ export default function CustomerDebts() {
             console.error(e);
         } finally {
             setDetailLoading(false);
+        }
+    }
+
+    async function cancelPayment(paymentId) {
+        if (!window.confirm('Бу тўловни бекор қилмоқчимисиз? Қарз ва баланс олдинги ҳолатига қайтади.')) return;
+        try {
+            await client.patch(`/debts/payments/${paymentId}/cancel`);
+            const res = await client.get(`/debts/customer/${detailModal.id}/detail`);
+            setDetailModal(res.data);
+            fetchDebts();
+            setRefreshKey((k) => k + 1);
+        } catch (e) {
+            alert(e.response?.data?.detail || 'Тўловни бекор қилиб бўлмади');
         }
     }
 
@@ -197,6 +214,8 @@ export default function CustomerDebts() {
                     </button>
                 </div>
             </div>
+
+            <MutualSettlements refreshKey={refreshKey} />
 
             {/* Summary */}
             <div className="kpi-grid">
@@ -480,6 +499,7 @@ export default function CustomerDebts() {
                                             <th>Тўлов тури</th>
                                             <th className="text-right">Сумма</th>
                                             <th>Изоҳ</th>
+                                            {isAdmin && <th></th>}
                                         </tr></thead>
                                         <tbody>
                                             {detailModal.payments.map(p => (
@@ -488,6 +508,13 @@ export default function CustomerDebts() {
                                                     <td>{p.payment_type === 'cash' ? 'Нақд' : 'Перечисления'}</td>
                                                     <td className="text-right" style={{ color: 'var(--success)', fontWeight: 600 }}>{formatMoney(p.amount)}</td>
                                                     <td style={{ color: 'var(--text-secondary)' }}>{p.note || '—'}</td>
+                                                    {isAdmin && (
+                                                        <td className="text-right">
+                                                            <button className="btn btn--danger-outline btn--sm" onClick={() => cancelPayment(p.id)}>
+                                                                Бекор қилиш
+                                                            </button>
+                                                        </td>
+                                                    )}
                                                 </tr>
                                             ))}
                                         </tbody>

@@ -137,11 +137,19 @@ def cancel_sale(
     if sale.status == "cancelled":
         raise ValueError("Сотув аллақачон бекор қилинган")
 
-    # 1. Reverse Inventory
+    # 0. Hammasini TEKSHIRIB olamiz va faqat keyin o'zgartiramiz. Aks holda
+    # omborga qaytarib bo'lgach xatolik chiqsa, yarim o'zgarish osilib qoladi.
     batch = db.query(InventoryBatch).filter(InventoryBatch.id == sale.inventory_batch_id).first()
     if not batch:
         raise ValueError("Боғланган омбор партияси топилмади")
-        
+
+    debt = None
+    if sale.debt_amount > 0:
+        debt = db.query(CustomerDebt).filter(CustomerDebt.sale_id == sale.id).first()
+        if debt and debt.paid_amount > 0:
+            raise ValueError("Бу сотув бўйича мижоз қарз тўлаган. Олдин қарз тўловини бекор қилинг.")
+
+    # 1. Reverse Inventory
     batch.remaining_quantity_liters += sale.quantity_liters
     if batch.status == "finished" and batch.remaining_quantity_liters > 0:
         batch.status = "active"
@@ -167,17 +175,10 @@ def cancel_sale(
                 # Catch insufficient funds error from update_balance
                 raise ValueError("Балансда ушбу сотувни бекор қилиш учун етарли маблағ йўқ.")
 
-    # 3. Reverse Customer Debt
-    if sale.debt_amount > 0:
-        debt = (
-            db.query(CustomerDebt)
-            .filter(CustomerDebt.sale_id == sale.id)
-            .first()
-        )
-        if debt:
-            if debt.paid_amount > 0:
-                 raise ValueError("Бу сотув бўйича мижоз қарз тўлаган. Олдин қарз тўловини бекор қилинг.")
-            debt.status = "cancelled"
+    # 3. Reverse Customer Debt (yuqorida tekshirilgan)
+    if debt:
+        debt.status = "cancelled"
+        debt.remaining_amount = 0.0
 
     # 4. Update Sale status
     sale.status = "cancelled"

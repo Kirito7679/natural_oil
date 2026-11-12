@@ -12,8 +12,12 @@ from app.schemas.debt import (
     ManualDebtCreate,
     CustomerDebtDetail, SupplierDebtDetail, DebtPaymentSimple,
 )
-from app.services.debt_service import pay_customer_debt, pay_supplier_debt
-from app.utils.deps import get_current_user
+from app.services.debt_service import (
+    pay_customer_debt, pay_supplier_debt,
+    cancel_debt_payment, cancel_manual_debt, partner_net_balances,
+)
+from app.utils.deps import get_current_user, require_admin
+from app.utils.enums import DebtType
 from app.models.partner import Partner
 
 router = APIRouter(prefix="/api/debts", tags=["Debts"])
@@ -257,3 +261,67 @@ def api_create_manual_supplier_debt(
     db.commit()
     db.refresh(debt)
     return SupplierDebtResponse.model_validate(debt)
+
+# ── Bekor qilish va o'zaro hisob-kitob ──────────────────────────────────────
+
+@router.patch("/payments/{payment_id}/cancel", response_model=DebtPaymentResponse)
+def api_cancel_debt_payment(
+    payment_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_admin),
+):
+    """Qarz to'lovini bekor qilish — hammasi oldingi holatiga qaytadi."""
+    try:
+        payment = cancel_debt_payment(db, payment_id, user_id=current_user.id)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    return DebtPaymentResponse.model_validate(payment)
+
+
+@router.patch("/customer/{debt_id}/cancel", response_model=CustomerDebtResponse)
+def api_cancel_customer_debt(
+    debt_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_admin),
+):
+    """Qo'lda kiritilgan mijoz qarzini bekor qilish."""
+    try:
+        debt = cancel_manual_debt(
+            db, DebtType.CUSTOMER_DEBT.value, debt_id, user_id=current_user.id
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    return CustomerDebtResponse.model_validate(debt)
+
+
+@router.patch("/supplier/{debt_id}/cancel", response_model=SupplierDebtResponse)
+def api_cancel_supplier_debt(
+    debt_id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(require_admin),
+):
+    """Qo'lda kiritilgan yetkazib beruvchi qarzini bekor qilish."""
+    try:
+        debt = cancel_manual_debt(
+            db, DebtType.SUPPLIER_DEBT.value, debt_id, user_id=current_user.id
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    return SupplierDebtResponse.model_validate(debt)
+
+
+@router.get("/net")
+def list_partner_net_balances(
+    db: Session = Depends(get_db),
+    _: User = Depends(get_current_user),
+):
+    """O'zaro hisob-kitob: har bir hamkor bo'yicha qarzlar ayirmasi."""
+    items = partner_net_balances(db)
+    mutual = [i for i in items if i["mutual"]]
+    return {
+        "items": items,
+        "total": len(items),
+        "mutual_count": len(mutual),
+        "they_owe_us_total": sum(i["they_owe_us"] for i in items),
+        "we_owe_them_total": sum(i["we_owe_them"] for i in items),
+    }
