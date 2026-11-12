@@ -115,3 +115,70 @@ def list_money_movements(
         items=res_items,
         total=total,
     )
+
+
+# Qo'lda kiritilgan pul harakatini bekor qilish. Sotuv/prixod/xarajat/qarz
+# to'lovidan kelgan harakat bu yerdan bekor qilinmaydi: uning o'rniga o'sha
+# hujjatning o'zi bekor qilinadi, aks holda balans hujjatdan ajralib qoladi.
+_CANCELLABLE_MOVEMENTS = {
+    MovementType.INITIAL_BALANCE.value,
+    MovementType.BALANCE_ADJUSTMENT.value,
+}
+
+
+@router.patch("/movements/{movement_id}/cancel", response_model=BalanceResponse)
+def cancel_movement(
+    movement_id: int,
+    db: Session = Depends(get_db),
+    admin: User = Depends(require_admin),
+):
+    """Noto'g'ri kiritilgan pul harakatini bekor qiladi.
+
+    Yozuvning o'zi o'chmaydi — teskari yo'nalishda qarshi harakat yoziladi,
+    shuning uchun tarixda nima bo'lgani ko'rinib turadi.
+    """
+    movement = db.query(MoneyMovement).filter(MoneyMovement.id == movement_id).first()
+    if not movement:
+        raise HTTPException(status_code=404, detail="Пул ҳаракати топилмади")
+
+    if movement.movement_type not in _CANCELLABLE_MOVEMENTS:
+        raise HTTPException(
+            status_code=400,
+            detail="Бу ҳаракат сотув, приход, харажат ёки қарз тўловидан келиб чиққан. "
+                   "Уни бекор қилиш учун ўша ҳужжатнинг ўзини бекор қилинг.",
+        )
+
+    already = (
+        db.query(MoneyMovement)
+        .filter(
+            MoneyMovement.movement_type == MovementType.CANCELLATION.value,
+            MoneyMovement.related_table == "money_movements",
+            MoneyMovement.related_id == movement_id,
+        )
+        .first()
+    )
+    if already:
+        raise HTTPException(status_code=400, detail="Бу ҳаракат аллақачон бекор қилинган")
+
+    from app.utils.enums import PaymentType as _PT
+    opposite = (
+        MovementDirection.OUTGOING
+        if movement.direction == MovementDirection.INCOME.value
+        else MovementDirection.INCOME
+    )
+    try:
+        update_balance(
+            db=db,
+            payment_type=_PT(movement.payment_type),
+            amount=movement.amount,
+            direction=opposite,
+            movement_type=MovementType.CANCELLATION,
+            related_table="money_movements",
+            related_id=movement.id,
+            note=f"Бекор қилинди: {movement.note or movement.movement_type}",
+            user_id=admin.id,
+            auto_commit=True,
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+    return get_balance(db)

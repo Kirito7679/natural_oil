@@ -9,7 +9,7 @@ from app.schemas.expense import (
     ExpenseCategoryCreate, ExpenseCategoryUpdate, ExpenseCategoryResponse,
     ExpenseCreate, ExpenseResponse, ExpenseListResponse,
 )
-from app.services.expense_service import create_expense, cancel_expense
+from app.services.expense_service import create_expense, cancel_expense, edit_expense
 from app.utils.deps import get_current_user
 
 router = APIRouter(prefix="/api/expenses", tags=["Expenses"])
@@ -135,6 +135,20 @@ def api_cancel_expense(
 ):
     try:
         expense = cancel_expense(db, expense_id, user_id=current_user.id)
+        return ExpenseResponse.model_validate(expense)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@router.put("/{expense_id}", response_model=ExpenseResponse)
+def api_edit_expense(
+    expense_id: int,
+    data: ExpenseCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Xarajatni to'g'rilash — eskisi bekor qilinib, yangisi yoziladi."""
+    try:
+        expense = edit_expense(db, expense_id, data, user_id=current_user.id)
         return ExpenseResponse.model_validate(expense)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))

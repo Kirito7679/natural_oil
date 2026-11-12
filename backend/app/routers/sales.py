@@ -7,7 +7,7 @@ from app.database import get_db
 from app.models.sale import Sale
 from app.models.user import User
 from app.schemas.sale import SaleCreate, SaleResponse, SaleListResponse
-from app.services.sale_service import create_sale, cancel_sale
+from app.services.sale_service import create_sale, cancel_sale, edit_sale
 from app.utils.deps import get_current_user
 
 router = APIRouter(prefix="/api/sales", tags=["Sales"])
@@ -66,6 +66,21 @@ def api_cancel_sale(
     """Sotuvni bekor qilish."""
     try:
         sale = cancel_sale(db, sale_id, user_id=current_user.id)
+        return SaleResponse.model_validate(sale)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.put("/{sale_id}", response_model=SaleResponse)
+def api_edit_sale(
+    sale_id: int,
+    data: SaleCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Sotuvni to'g'rilash — eskisi bekor qilinib, yangisi yoziladi."""
+    try:
+        sale = edit_sale(db, sale_id, data, user_id=current_user.id)
         return SaleResponse.model_validate(sale)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))

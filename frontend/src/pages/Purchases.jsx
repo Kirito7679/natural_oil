@@ -4,7 +4,7 @@
  */
 import { useState, useEffect } from 'react';
 import client from '../api/client';
-import { getPurchases, createPurchase, cancelPurchase } from '../api/purchases';
+import { getPurchases, createPurchase, cancelPurchase, updatePurchase } from '../api/purchases';
 import { getProducts } from '../api/products';
 import { getPartners } from '../api/partners';
 import PartnerPicker from '../components/PartnerPicker';
@@ -42,6 +42,7 @@ export default function Purchases() {
     note: ''
   };
   const [form, setForm] = useState(emptyForm);
+  const [editingId, setEditingId] = useState(null);
 
   const fetchData = async () => {
     try {
@@ -66,6 +67,26 @@ export default function Purchases() {
 
   const openCreateModal = () => {
     setForm({ ...emptyForm, date: today });
+    setEditingId(null);
+    setError('');
+    setModalOpen(true);
+  };
+
+  // Tuzatish: eski prixod bekor qilinib, yangisi yoziladi (bitta tranzaksiyada).
+  const openEditModal = (p) => {
+    setForm({
+      date: p.date,
+      supplier_id: String(p.supplier_id ?? p.supplier?.id ?? ''),
+      product_id: String(p.product_id ?? p.product?.id ?? ''),
+      quantity_liters: String(p.quantity_liters ?? ''),
+      calc_mode: 'price',
+      purchase_price_per_liter: String(p.purchase_price_per_liter ?? ''),
+      total_amount: String(p.total_amount ?? ''),
+      paid_amount: p.paid_amount ? String(p.paid_amount) : '',
+      payment_type: (p.payments && p.payments[0]?.payment_type) || 'cash',
+      note: p.note || ''
+    });
+    setEditingId(p.id);
     setError('');
     setModalOpen(true);
   };
@@ -128,7 +149,12 @@ export default function Purchases() {
         });
       }
 
-      await createPurchase(payload);
+      if (editingId) {
+        await updatePurchase(editingId, payload);
+      } else {
+        await createPurchase(payload);
+      }
+      setEditingId(null);
       setModalOpen(false);
       fetchData();
     } catch (err) {
@@ -247,12 +273,21 @@ export default function Purchases() {
                     </td>
                     <td>
                       {p.status === 'active' && (
-                        <button
-                          className="btn btn--sm btn--danger-outline"
-                          onClick={() => handleCancel(p.id)}
-                        >
-                          Бекор қилиш
-                        </button>
+                        <>
+                          <button
+                            className="btn btn--sm btn--outline"
+                            style={{ marginRight: '0.4rem' }}
+                            onClick={() => openEditModal(p)}
+                          >
+                            Тўғрилаш
+                          </button>
+                          <button
+                            className="btn btn--sm btn--danger-outline"
+                            onClick={() => handleCancel(p.id)}
+                          >
+                            Бекор қилиш
+                          </button>
+                        </>
                       )}
                     </td>
                   </tr>
@@ -267,7 +302,7 @@ export default function Purchases() {
       <Modal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
-        title="Янги приход"
+        title={editingId ? "Приходни тўғрилаш" : "Янги приход"}
         width={600}
       >
         <form onSubmit={handleSubmit}>

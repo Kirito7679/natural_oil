@@ -3,8 +3,8 @@
  * All UI labels in Uzbek.
  */
 import { useState, useEffect, useMemo } from 'react';
-import { Eye } from 'lucide-react';
-import { getSales, createSale, cancelSale } from '../api/sales';
+import { Eye, Pencil } from 'lucide-react';
+import { getSales, createSale, cancelSale, updateSale } from '../api/sales';
 import { getProducts } from '../api/products';
 import { getPartners } from '../api/partners';
 import PartnerPicker from '../components/PartnerPicker';
@@ -42,6 +42,7 @@ export default function Sales() {
     note: ''
   };
   const [form, setForm] = useState(emptyForm);
+  const [editingId, setEditingId] = useState(null);
 
   const fetchData = async () => {
     try {
@@ -67,6 +68,26 @@ export default function Sales() {
 
   const openCreateModal = () => {
     setForm({ ...emptyForm, date: today });
+    setEditingId(null);
+    setError('');
+    setModalOpen(true);
+  };
+
+  // Tuzatish: eski sotuv bekor qilinib, yangisi yoziladi (bitta tranzaksiyada).
+  const openEditModal = (s) => {
+    setForm({
+      date: s.date,
+      customer_id: String(s.customer_id ?? s.customer?.id ?? ''),
+      product_id: String(s.product_id ?? s.product?.id ?? ''),
+      inventory_batch_id: String(s.inventory_batch_id ?? ''),
+      quantity_liters: String(s.quantity_liters ?? ''),
+      purchase_price_per_liter: String(s.purchase_price_per_liter ?? ''),
+      sale_price_per_liter: String(s.sale_price_per_liter ?? ''),
+      paid_amount: s.paid_amount ? String(s.paid_amount) : '',
+      payment_type: (s.payments && s.payments[0]?.payment_type) || 'cash',
+      note: s.note || ''
+    });
+    setEditingId(s.id);
     setError('');
     setModalOpen(true);
   };
@@ -160,8 +181,13 @@ export default function Sales() {
         });
       }
 
-      await createSale(payload);
+      if (editingId) {
+        await updateSale(editingId, payload);
+      } else {
+        await createSale(payload);
+      }
       setModalOpen(false);
+      setEditingId(null);
       fetchData();
     } catch (err) {
       setError(err.response?.data?.detail || "Хатолик юз берди");
@@ -257,6 +283,15 @@ export default function Sales() {
                       </span>
                     </td>
                     <td style={{ textAlign: 'center' }}>
+                      {s.status === 'active' && (
+                        <button
+                          className="row-action-btn"
+                          onClick={() => openEditModal(s)}
+                          title="Тўғрилаш"
+                        >
+                          <Pencil size={16} strokeWidth={2.2} />
+                        </button>
+                      )}
                       <button
                         className="row-action-btn"
                         onClick={() => setDetailSale(s)}
@@ -277,7 +312,7 @@ export default function Sales() {
       <Modal
         isOpen={modalOpen}
         onClose={() => setModalOpen(false)}
-        title="Янги сотув"
+        title={editingId ? "Сотувни тўғрилаш" : "Янги сотув"}
         width={700}
       >
         <form onSubmit={handleSubmit}>

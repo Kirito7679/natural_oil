@@ -14,7 +14,8 @@ from app.utils.enums import PaymentType, MovementType, MovementDirection
 
 
 def create_expense(
-    db: Session, data: ExpenseCreate, user_id: int | None = None
+    db: Session, data: ExpenseCreate, user_id: int | None = None,
+    auto_commit: bool = True,
 ) -> Expense:
     """Create expense and decrease balance."""
 
@@ -54,13 +55,15 @@ def create_expense(
             on_date=data.date,
     )
 
-    db.commit()
-    db.refresh(expense)
+    if auto_commit:
+        db.commit()
+        db.refresh(expense)
     return expense
 
 
 def cancel_expense(
-    db: Session, expense_id: int, user_id: int | None = None
+    db: Session, expense_id: int, user_id: int | None = None,
+    auto_commit: bool = True,
 ) -> Expense:
     """Cancel expense and restore balance."""
 
@@ -90,6 +93,21 @@ def cancel_expense(
         auto_commit=False,
     )
 
-    db.commit()
-    db.refresh(expense)
+    if auto_commit:
+        db.commit()
+        db.refresh(expense)
     return expense
+
+def edit_expense(
+    db: Session, expense_id: int, data: ExpenseCreate, user_id: int | None = None
+) -> Expense:
+    """Xarajatni to'g'rilash: eskisini bekor qilib, yangisini yozadi. Bitta tranzaksiyada."""
+    try:
+        cancel_expense(db, expense_id, user_id=user_id, auto_commit=False)
+        new_expense = create_expense(db, data, user_id=user_id, auto_commit=False)
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
+    db.refresh(new_expense)
+    return new_expense

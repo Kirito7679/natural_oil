@@ -18,6 +18,7 @@ export default function Expenses() {
     // Add expense modal
     const [showModal, setShowModal] = useState(false);
     const [form, setForm] = useState({ date: today(), category_id: '', amount: '', payment_type: 'cash', note: '' });
+    const [editingId, setEditingId] = useState(null);
     const [formError, setFormError] = useState('');
     const [formLoading, setFormLoading] = useState(false);
 
@@ -56,13 +57,33 @@ export default function Expenses() {
         setFormLoading(true);
         setFormError('');
         try {
-            await client.post(`/expenses`, { ...form, amount: parseFloat(form.amount), category_id: parseInt(form.category_id) });
+            const payload = { ...form, amount: parseFloat(form.amount), category_id: parseInt(form.category_id) };
+            if (editingId) {
+                await client.put(`/expenses/${editingId}`, payload);
+            } else {
+                await client.post(`/expenses`, payload);
+            }
             setShowModal(false);
+            setEditingId(null);
             setForm({ date: today(), category_id: '', amount: '', payment_type: 'cash', note: '' });
             fetchExpenses();
         } catch (e) {
             setFormError(e.response?.data?.detail || 'Хато юз берди.');
         } finally { setFormLoading(false); }
+    }
+
+    // Tuzatish: eski xarajat bekor qilinib, yangisi yoziladi (bitta tranzaksiyada).
+    function openEdit(e) {
+        setForm({
+            date: e.date,
+            category_id: String(e.category_id ?? e.category?.id ?? ''),
+            amount: String(e.amount ?? ''),
+            payment_type: e.payment_type || 'cash',
+            note: e.note || ''
+        });
+        setEditingId(e.id);
+        setFormError('');
+        setShowModal(true);
     }
 
     async function cancelExpense(id) {
@@ -115,7 +136,7 @@ export default function Expenses() {
                     <button className="btn btn-secondary" onClick={() => { setShowCatModal(true); setCatError(''); setCatName(''); }}>
                         + Категория
                     </button>
-                    <button className="btn btn-primary" onClick={() => { setShowModal(true); setFormError(''); }}>
+                    <button className="btn btn-primary" onClick={() => { setEditingId(null); setForm({ date: today(), category_id: '', amount: '', payment_type: 'cash', note: '' }); setShowModal(true); setFormError(''); }}>
                         + Харажат қўшиш
                     </button>
                 </div>
@@ -183,9 +204,14 @@ export default function Expenses() {
                                     </td>
                                     <td>
                                         {e.status === 'active' && (
-                                            <button className="btn btn-secondary" style={{ fontSize: '0.8rem', padding: '3px 10px' }} onClick={() => cancelExpense(e.id)}>
-                                                Бекор
-                                            </button>
+                                            <>
+                                                <button className="btn btn-secondary" style={{ fontSize: '0.8rem', padding: '3px 10px', marginRight: '0.35rem' }} onClick={() => openEdit(e)}>
+                                                    Тўғрилаш
+                                                </button>
+                                                <button className="btn btn-secondary" style={{ fontSize: '0.8rem', padding: '3px 10px' }} onClick={() => cancelExpense(e.id)}>
+                                                    Бекор
+                                                </button>
+                                            </>
                                         )}
                                     </td>
                                 </tr>

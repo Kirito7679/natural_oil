@@ -7,7 +7,7 @@ from app.database import get_db
 from app.models.purchase import Purchase
 from app.models.user import User
 from app.schemas.purchase import PurchaseCreate, PurchaseResponse, PurchaseListResponse, InitialFuelStockRequest
-from app.services.purchase_service import create_purchase, cancel_purchase, create_initial_fuel_stock
+from app.services.purchase_service import create_purchase, cancel_purchase, create_initial_fuel_stock, edit_purchase
 from app.utils.deps import get_current_user
 
 router = APIRouter(prefix="/api/purchases", tags=["Purchases"])
@@ -80,6 +80,21 @@ def api_cancel_purchase(
     """Prixodni bekor qilish."""
     try:
         purchase = cancel_purchase(db, purchase_id, user_id=current_user.id)
+        return PurchaseResponse.model_validate(purchase)
+    except ValueError as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+
+@router.put("/{purchase_id}", response_model=PurchaseResponse)
+def api_edit_purchase(
+    purchase_id: int,
+    data: PurchaseCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    """Prixodni to'g'rilash — eskisi bekor qilinib, yangisi yoziladi."""
+    try:
+        purchase = edit_purchase(db, purchase_id, data, user_id=current_user.id)
         return PurchaseResponse.model_validate(purchase)
     except ValueError as e:
         raise HTTPException(status_code=400, detail=str(e))

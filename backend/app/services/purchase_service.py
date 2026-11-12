@@ -17,7 +17,8 @@ from app.utils.enums import PaymentType, MovementType, MovementDirection
 
 
 def create_purchase(
-    db: Session, data: PurchaseCreate, user_id: int | None = None
+    db: Session, data: PurchaseCreate, user_id: int | None = None,
+    auto_commit: bool = True,
 ) -> Purchase:
     """Create purchase, manage inventory batch, payments, and supplier debt."""
     supplier = db.get(Partner, data.supplier_id)
@@ -118,8 +119,9 @@ def create_purchase(
         )
         db.add(new_batch)
 
-    db.commit()
-    db.refresh(purchase)
+    if auto_commit:
+        db.commit()
+        db.refresh(purchase)
     return purchase
 
 
@@ -199,7 +201,8 @@ def create_initial_fuel_stock(
 
 
 def cancel_purchase(
-    db: Session, purchase_id: int, user_id: int | None = None
+    db: Session, purchase_id: int, user_id: int | None = None,
+    auto_commit: bool = True,
 ) -> Purchase:
     """Cancel a purchase, reverse payments/debt, and remove from inventory.
     
@@ -280,7 +283,28 @@ def cancel_purchase(
 
     # 4. Update Purchase status
     purchase.status = "cancelled"
-    
-    db.commit()
-    db.refresh(purchase)
+
+    if auto_commit:
+        db.commit()
+        db.refresh(purchase)
     return purchase
+
+
+def edit_purchase(
+    db: Session, purchase_id: int, data: PurchaseCreate, user_id: int | None = None
+) -> Purchase:
+    """Prixodni to'g'rilash: eskisini bekor qilib, yangisini yaratadi.
+
+    Bitta tranzaksiyada. Agar bu partiyadan allaqachon sotilgan bo'lsa,
+    bekor qilish ishlamaydi va hech narsa o'zgarmaydi — avval o'sha sotuvni
+    bekor qilish kerak.
+    """
+    try:
+        cancel_purchase(db, purchase_id, user_id=user_id, auto_commit=False)
+        new_purchase = create_purchase(db, data, user_id=user_id, auto_commit=False)
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
+    db.refresh(new_purchase)
+    return new_purchase

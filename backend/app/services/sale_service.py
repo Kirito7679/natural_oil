@@ -14,7 +14,8 @@ from app.utils.enums import PaymentType, MovementType, MovementDirection
 
 
 def create_sale(
-    db: Session, data: SaleCreate, user_id: int | None = None
+    db: Session, data: SaleCreate, user_id: int | None = None,
+    auto_commit: bool = True,
 ) -> Sale:
     """Create a sale, deduct inventory, and manage balances and customer debts."""
     
@@ -122,13 +123,15 @@ def create_sale(
         )
         db.add(debt)
 
-    db.commit()
-    db.refresh(sale)
+    if auto_commit:
+        db.commit()
+        db.refresh(sale)
     return sale
 
 
 def cancel_sale(
-    db: Session, sale_id: int, user_id: int | None = None
+    db: Session, sale_id: int, user_id: int | None = None,
+    auto_commit: bool = True,
 ) -> Sale:
     """Cancel a sale, return inventory, reverse payments/debt."""
     sale = db.query(Sale).filter(Sale.id == sale_id).first()
@@ -182,7 +185,28 @@ def cancel_sale(
 
     # 4. Update Sale status
     sale.status = "cancelled"
-    
-    db.commit()
-    db.refresh(sale)
+
+    if auto_commit:
+        db.commit()
+        db.refresh(sale)
     return sale
+
+
+def edit_sale(
+    db: Session, sale_id: int, data: SaleCreate, user_id: int | None = None
+) -> Sale:
+    """Sotuvni to'g'rilash: eskisini bekor qilib, yangi ma'lumot bilan qayta yozadi.
+
+    Ikkalasi bitta tranzaksiyada bajariladi — yangisi o'tmasa (masalan omborda
+    yetarli yoqilg'i yo'q), eskisi ham joyida qoladi. Eski yozuv o'chmaydi,
+    "bekor qilingan" bo'lib tarixda turadi.
+    """
+    try:
+        cancel_sale(db, sale_id, user_id=user_id, auto_commit=False)
+        new_sale = create_sale(db, data, user_id=user_id, auto_commit=False)
+        db.commit()
+    except Exception:
+        db.rollback()
+        raise
+    db.refresh(new_sale)
+    return new_sale
